@@ -19,12 +19,13 @@ namespace Mowit
             string path = System.IO.Directory.GetCurrentDirectory();
             var serializer = new XmlSerializer(typeof(MowitConfig));
 
-            // When writing a file
-            //TextWriter textWriter = new StreamWriter(Path.Combine(path, "MowSettings.xml"));
-            //serializer.Serialize(textWriter, mowitConfig);
-
             TextReader textReader = new StreamReader(Path.Combine(path, "MowitSettings.xml"));
             Config = (MowitConfig)serializer.Deserialize(textReader);
+
+            // When writing a file
+            //TextWriter textWriter = new StreamWriter(Path.Combine(path, "MowitSettingsOut.xml"));
+            //serializer.Serialize(textWriter, Config);
+            //textWriter.Flush();
 
             Smhi.Init(Config.MowPlannerConfig.CoordLat, Config.MowPlannerConfig.CoordLon, new TimeSpan(1, 0, 0));
             EmailSender.Init(Config.EmailConfig);

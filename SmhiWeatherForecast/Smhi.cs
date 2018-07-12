@@ -33,8 +33,8 @@ namespace SmhiWeather
 
             if (_cachedForecast == null || _lastRequestUtcTime + _refreshInterval < DateTime.UtcNow)
             {
-                string lat = _coordLat.ToString("0.00");
-                string lon = _coordLon.ToString("0.00");
+                string lat = _coordLat.ToString("0.00").Replace(",", ".");
+                string lon = _coordLon.ToString("0.00").Replace(",", ".");
                 string uri = $"http://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/{lon}/lat/{lat}/data.json";
                 HttpWebRequest webRequest = WebRequest.CreateHttp(uri);
 
