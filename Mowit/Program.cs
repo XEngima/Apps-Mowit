@@ -8,6 +8,8 @@ namespace Mowit
 {
     class Program
     {
+        private static MowitConfig Config { get; set; }
+
         static void Main(string[] args)
         {
             Console.WriteLine("Press ENTER to start the Mowit service.");
@@ -19,19 +21,19 @@ namespace Mowit
             //serializer.Serialize(textWriter, mowitConfig);
 
             TextReader textReader = new StreamReader(Path.Combine(path, "MowitSettings.xml"));
-            var mowitConfig = (MowitConfig)serializer.Deserialize(textReader);
+            Config = (MowitConfig)serializer.Deserialize(textReader);
 
-            EmailSender.Init(mowitConfig.EmailConfig);
+            EmailSender.Init(Config.EmailConfig);
 
             var systemTime = new SystemTime();
-            var homeSensor = new TimeBasedHomeSensor(mowitConfig.MowPlannerConfig, systemTime);
-            var powerSwitch = new UrlPowerSwitch(mowitConfig.MowPlannerConfig.PowerOnUrl, mowitConfig.MowPlannerConfig.PowerOffUrl);
-            var weatherForecast = new WeatherForecast(mowitConfig.MowPlannerConfig.MaxHourlyThunderPercent, mowitConfig.MowPlannerConfig.MaxHourlyPrecipitaionMillimeter);
+            var homeSensor = new TimeBasedHomeSensor(Config.MowPlannerConfig, systemTime);
+            var powerSwitch = new UrlPowerSwitch(Config.MowPlannerConfig.PowerOnUrl, Config.MowPlannerConfig.PowerOffUrl);
+            var weatherForecast = new WeatherForecast(Config.MowPlannerConfig.MaxHourlyThunderPercent, Config.MowPlannerConfig.MaxHourlyPrecipitaionMillimeter);
             var logger = new MowLogger();
 
             logger.LogItemWritten += Logger_LogItemWritten;
 
-            var mowController = new MowController(mowitConfig.MowPlannerConfig, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var mowController = new MowController(Config.MowPlannerConfig, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
             var task = mowController.StartAsync();
         }
 
@@ -44,7 +46,10 @@ namespace Mowit
 
             try
             {
-                EmailSender.SendMail(logger.LogItems[index].Message, logger.LogItems[index].Time.ToString("yyyy-MM-dd HH:mm") + " - " + logger.LogItems[index].Message);
+                if (Config.EmailConfig.SendEmails)
+                {
+                    EmailSender.SendMail(logger.LogItems[index].Message, logger.LogItems[index].Time.ToString("yyyy-MM-dd HH:mm") + " - " + logger.LogItems[index].Message);
+                }
             }
             catch (Exception ex)
             {

@@ -6,6 +6,8 @@ namespace Mowit
 {
     public class EmailConfig
     {
+        public bool SendEmails { get; set; }
+
         public string FromAddress { get; set; }
 
         public string FromName { get; set; }
