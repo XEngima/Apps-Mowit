@@ -87,7 +87,7 @@ namespace MowerTests
             Assert.AreEqual(LogType.PowerOn, logger.LogItems[1].Type);
             string expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "06:00";
             Assert.AreEqual(expectedLogDate, logger.LogItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
-            Assert.AreEqual("Power was turned on.", logger.LogItems[1].Message);
+            Assert.IsTrue(logger.LogItems[1].Message.StartsWith("Power was turned on."));
         }
 
         [TestMethod]
@@ -144,7 +144,7 @@ namespace MowerTests
             Assert.AreEqual(LogType.PowerOff, logger.LogItems[1].Type);
             string expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "12:55";
             Assert.AreEqual(expectedLogDate, logger.LogItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
-            Assert.AreEqual("Power was turned off. Bad weather in next interval.", logger.LogItems[1].Message);
+            Assert.IsTrue(logger.LogItems[1].Message.StartsWith("Power was turned off."));
 
             //Assert.AreEqual(LogType.IntervalStarted, logger.LogItems[1].Type);
             //expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "13:00";
@@ -175,7 +175,7 @@ namespace MowerTests
             Assert.AreEqual(LogType.PowerOff, logger.LogItems[1].Type);
             string expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "12:58";
             Assert.AreEqual(expectedLogDate, logger.LogItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
-            Assert.AreEqual("Power was turned off. Bad weather in next interval.", logger.LogItems[1].Message);
+            Assert.IsTrue(logger.LogItems[1].Message.StartsWith("Power was turned off."));
         }
 
         [TestMethod]
@@ -226,7 +226,7 @@ namespace MowerTests
             Assert.AreEqual(LogType.PowerOff, logger.LogItems[2].Type);
             string expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "23:55";
             Assert.AreEqual(expectedLogDate, logger.LogItems[2].Time.ToString("yyyy-MM-dd HH:mm"));
-            Assert.AreEqual("Power was turned off. Bad weather in next interval.", logger.LogItems[2].Message);
+            Assert.IsTrue(logger.LogItems[2].Message.StartsWith("Power was turned off."));
         }
 
         [TestMethod]
@@ -255,7 +255,7 @@ namespace MowerTests
             Assert.AreEqual(LogType.PowerOff, logger.LogItems[2].Type);
             string expectedLogDate = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd ") + "05:55";
             Assert.AreEqual(expectedLogDate, logger.LogItems[2].Time.ToString("yyyy-MM-dd HH:mm"));
-            Assert.AreEqual("Power was turned off. Bad weather in next interval.", logger.LogItems[2].Message);
+            Assert.IsTrue(logger.LogItems[2].Message.StartsWith("Power was turned off."));
         }
 
         [TestMethod]
@@ -284,12 +284,12 @@ namespace MowerTests
             Assert.AreEqual(LogType.PowerOff, logger.LogItems[1].Type);
             string expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "05:55";
             Assert.AreEqual(expectedLogDate, logger.LogItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
-            Assert.AreEqual("Power was turned off. Bad weather in next interval.", logger.LogItems[1].Message);
+            Assert.IsTrue(logger.LogItems[1].Message.StartsWith("Power was turned off."));
 
             Assert.AreEqual(LogType.PowerOn, logger.LogItems[2].Type);
             expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "18:00";
             Assert.AreEqual(expectedLogDate, logger.LogItems[2].Time.ToString("yyyy-MM-dd HH:mm"));
-            Assert.AreEqual("Power was turned on.", logger.LogItems[2].Message);
+            Assert.IsTrue(logger.LogItems[2].Message.StartsWith("Power was turned on."));
         }
 
         [TestMethod]
@@ -318,12 +318,12 @@ namespace MowerTests
             Assert.AreEqual(LogType.PowerOff, logger.LogItems[1].Type);
             string expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "17:55";
             Assert.AreEqual(expectedLogDate, logger.LogItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
-            Assert.AreEqual("Power was turned off. Bad weather in next interval.", logger.LogItems[1].Message);
+            Assert.IsTrue(logger.LogItems[1].Message.StartsWith("Power was turned off."));
 
             Assert.AreEqual(LogType.PowerOn, logger.LogItems[2].Type);
             expectedLogDate = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd ") + "06:00";
             Assert.AreEqual(expectedLogDate, logger.LogItems[2].Time.ToString("yyyy-MM-dd HH:mm"));
-            Assert.AreEqual("Power was turned on.", logger.LogItems[2].Message);
+            Assert.IsTrue(logger.LogItems[2].Message.StartsWith("Power was turned on."));
         }
 
         [TestMethod]
@@ -415,7 +415,7 @@ namespace MowerTests
 
             Assert.AreEqual(LogType.PowerOn, logger.LogItems[3].Type);
             Assert.AreEqual("2018-06-26 16:00", logger.LogItems[3].Time.ToString("yyyy-MM-dd HH:mm"));
-            Assert.AreEqual("Power was turned on.", logger.LogItems[3].Message);
+            Assert.IsTrue(logger.LogItems[3].Message.StartsWith("Power was turned on."));
         }
 
         [TestMethod]

@@ -34,8 +34,10 @@ namespace MowerTests
         /// </summary>
         /// <param name="hours">Antalet timmar fram att kontrollera.</param>
         /// <returns>true om vädret de närmaste timmarna förväntas bli bra, annars false.</returns>
-        public bool CheckIfWeatherWillBeGood(int hours)
+        public bool CheckIfWeatherWillBeGood(int hours, out string weatherAheadDescription)
         {
+            weatherAheadDescription = "";
+
             if (_throwException)
             {
                 throw new WeatherException("Failed to contact weather service.");
@@ -47,6 +49,12 @@ namespace MowerTests
                 .FirstOrDefault();
 
             return weatherPeriod.GoodWeather;
+        }
+
+        public bool CheckIfWeatherWillBeGood(int hours)
+        {
+            string weatherAheadDescription;
+            return CheckIfWeatherWillBeGood(hours, out weatherAheadDescription);
         }
 
         public void SetExpectation(bool expectingGoodWeather)
