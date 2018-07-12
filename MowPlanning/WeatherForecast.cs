@@ -14,8 +14,14 @@ namespace MowPlanning
             MaxHourlyPrecipitaionMillimeter = maxHourlyPrecipitationMillimeter;
         }
 
-        public bool ExpectingGoodWeather(int hours)
+        /// <summary>
+        /// Gets a text describing the weather ahead. Set when CheckIfWeatherWillBeGood is executed.
+        /// </summary>
+        public string WeatherAheadDescription { get; private set; }
+
+        public bool CheckIfWeatherWillBeGood(int hours)
         {
+            WeatherAheadDescription = "Weather will be fine.";
             Forecast forecast = Smhi.GetForecast();
             ForecastTimeSerie currentWeather = Smhi.GetCurrentWeather();
 
@@ -28,6 +34,7 @@ namespace MowPlanning
                 ForecastParameter parameter = timeSerie.parameters.First(p => p.name == "pmax");
                 if (parameter.values[0] > (decimal)MaxHourlyPrecipitaionMillimeter)
                 {
+                    WeatherAheadDescription = "Expecting rain as a maximum of " + parameter.values[0] + " mm/h at " + timeSerie.validTime.ToShortTimeString() + ".";
                     return false;
                 }
 
@@ -35,6 +42,7 @@ namespace MowPlanning
                 parameter = timeSerie.parameters.First(p => p.name == "tstm");
                 if (parameter.values[0] > MaxHourlyThunderPercent)
                 {
+                    WeatherAheadDescription = "Thunder warning of " + parameter.values[0] + "% at " + timeSerie.validTime.ToShortTimeString() + ".";
                     return false;
                 }
 
@@ -51,6 +59,5 @@ namespace MowPlanning
         private int MaxHourlyThunderPercent { get; set; }
 
         private double MaxHourlyPrecipitaionMillimeter { get; set; }
-
     }
 }

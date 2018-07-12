@@ -18,5 +18,9 @@ namespace MowPlanning
         public string PowerOnUrl { get; set; }
 
         public string PowerOffUrl { get; set; }
+
+        public decimal CoordLat { get; }
+
+        public decimal CoordLon { get; }
     }
 }

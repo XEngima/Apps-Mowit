@@ -11,6 +11,11 @@ namespace MowPlanning
         /// </summary>
         /// <param name="hours">Antalet timmar framöver att kontrollera.</param>
         /// <returns>true om vädret är tillräckligt bra för att köra, annars false.</returns>
-        bool ExpectingGoodWeather(int hours);
+        bool CheckIfWeatherWillBeGood(int hours);
+
+        /// <summary>
+        /// Gets a text describing the weather ahead. Set when CheckIfWeatherWillBeGood is executed.
+        /// </summary>
+        string WeatherAheadDescription { get; }
     }
 }

@@ -190,7 +190,7 @@ namespace MowPlanning
 
             // Gör en extra koll på vädret
 
-            if (!WeatherForecast.ExpectingGoodWeather(48))
+            if (!WeatherForecast.CheckIfWeatherWillBeGood(48))
             {
                 mowingNecessary = true;
             }
@@ -222,10 +222,10 @@ namespace MowPlanning
                         {
                             int forecastHours = interval.EndHour - SystemTime.Now.Hour + 2;
 
-                            if (WeatherForecast.ExpectingGoodWeather(forecastHours) && MowingNecessary())
+                            if (WeatherForecast.CheckIfWeatherWillBeGood(forecastHours) && MowingNecessary())
                             {
                                 PowerSwitch.TurnOn();
-                                Logger.Write(SystemTime.Now, LogType.PowerOn, "Power was turned on.");
+                                Logger.Write(SystemTime.Now, LogType.PowerOn, "Power was turned on. " + WeatherForecast.WeatherAheadDescription);
                             }
                         }
                     }
@@ -247,10 +247,10 @@ namespace MowPlanning
                         {
                             // If there will be rain, turn off power
                             int forecastHours = NextInterval.ToTimeSpan().Hours + 2;
-                            if (!WeatherForecast.ExpectingGoodWeather(forecastHours))
+                            if (!WeatherForecast.CheckIfWeatherWillBeGood(forecastHours))
                             {
                                 PowerSwitch.TurnOff();
-                                Logger.Write(SystemTime.Now, LogType.PowerOff, "Power was turned off. Bad weather in next interval.");
+                                Logger.Write(SystemTime.Now, LogType.PowerOff, "Power was turned off. " + WeatherForecast.WeatherAheadDescription);
                             }
 
                             // If mowing not necessary, turn off power

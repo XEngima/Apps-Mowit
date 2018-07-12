@@ -12,6 +12,11 @@ namespace MowerTests
         private ISystemTime _systemTime;
         private bool _throwException;
 
+        /// <summary>
+        /// Gets a text describing the weather ahead. Set when CheckIfWeatherWillBeGood is executed.
+        /// </summary>
+        public string WeatherAheadDescription { get; private set; }
+
         public TestWeatherForecast(bool expectingGoodWeather, ISystemTime systemTime)
         {
             _weatherPeriods.Add(new WeatherPeriod(new DateTime(1970, 1, 1), expectingGoodWeather));
@@ -29,7 +34,7 @@ namespace MowerTests
         /// </summary>
         /// <param name="hours">Antalet timmar fram att kontrollera.</param>
         /// <returns>true om vädret de närmaste timmarna förväntas bli bra, annars false.</returns>
-        public bool ExpectingGoodWeather(int hours)
+        public bool CheckIfWeatherWillBeGood(int hours)
         {
             if (_throwException)
             {

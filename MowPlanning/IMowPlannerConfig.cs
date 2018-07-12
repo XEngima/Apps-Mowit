@@ -12,6 +12,16 @@ namespace MowPlanning
         List<TimeInterval> TimeIntervals { get; }
 
         /// <summary>
+        /// Hämtar Lat-delen av koordinaten där gräsmattan ligger (där vädret ska hämtas)
+        /// </summary>
+        decimal CoordLat { get; }
+
+        /// <summary>
+        /// Hämtar Lon-delen av koordinaten där gräsmattan ligger (där vädret ska hämtas)
+        /// </summary>
+        decimal CoordLon { get; }
+
+        /// <summary>
         /// Hämtar antalet arbetstimmar per dag.
         /// </summary>
         int AverageWorkPerDayHours { get; }
