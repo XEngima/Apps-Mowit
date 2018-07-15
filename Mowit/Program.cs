@@ -5,6 +5,8 @@ using System.Xml.Serialization;
 using MowPlanning;
 using SmhiWeather;
 
+// dotnet publish -c Release -r win10-x64
+
 namespace Mowit
 {
     class Program

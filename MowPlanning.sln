@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mowit", "Mowit\Mowit.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmhiWeatherForecast", "SmhiWeatherForecast\SmhiWeatherForecast.csproj", "{2EA4980C-D540-4529-B69D-D37BEF28979C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MowerTests", "MowerTests\MowerTests.csproj", "{EE80D37E-025B-430B-8AF4-E6E9FF1BADDB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{2EA4980C-D540-4529-B69D-D37BEF28979C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2EA4980C-D540-4529-B69D-D37BEF28979C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2EA4980C-D540-4529-B69D-D37BEF28979C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EE80D37E-025B-430B-8AF4-E6E9FF1BADDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EE80D37E-025B-430B-8AF4-E6E9FF1BADDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EE80D37E-025B-430B-8AF4-E6E9FF1BADDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EE80D37E-025B-430B-8AF4-E6E9FF1BADDB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
