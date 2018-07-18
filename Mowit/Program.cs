@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
-using MowPlanning;
+using MowControl;
 using SmhiWeather;
 
 // dotnet publish -c Release -r win10-x64

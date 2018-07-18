@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 
-namespace MowPlanning
+namespace MowControl
 {
     public class WeatherForecast : IWeatherForecast
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MowPlanning
+namespace MowControl
 {
     public interface IMowLogger
     {

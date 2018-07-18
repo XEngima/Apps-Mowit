@@ -1,9 +1,9 @@
-﻿using MowPlanning;
+﻿using MowControl;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MowPlanning
+namespace MowControl
 {
     public class MowLogger : IMowLogger
     {

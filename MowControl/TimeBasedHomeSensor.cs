@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MowPlanning
+namespace MowControl
 {
     /// <summary>
     /// Sensor som kollar om robotgräsklipparen står i sitt bo eller inte.

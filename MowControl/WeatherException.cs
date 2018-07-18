@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace MowPlanning
+namespace MowControl
 {
     [Serializable]
     public class WeatherException : Exception

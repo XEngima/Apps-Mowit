@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MowPlanning
+namespace MowControl
 {
     public class LogItem
     {

@@ -1,4 +1,4 @@
-﻿namespace MowPlanning
+﻿namespace MowControl
 {
     public class PowerChangedEventArgs
     {

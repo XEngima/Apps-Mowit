@@ -6,8 +6,9 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <StartupObject>Mowit.Program</StartupObject>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\MowPlanning\MowPlanning.csproj" />
+    <ProjectReference Include="..\MowControl\MowControl.csproj" />
   </ItemGroup>
 
 </Project>

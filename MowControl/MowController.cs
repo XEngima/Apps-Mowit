@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MowPlanning
+namespace MowControl
 {
     /// <summary>
     /// Klass som kontrollerar robotgräsklipparens schema och körning.

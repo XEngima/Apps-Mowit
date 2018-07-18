@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MowPlanning
+namespace MowControl
 {
     /// <summary>
     /// Klass som hanterar på- och avslagning av stömmen till gräsklipparen.
