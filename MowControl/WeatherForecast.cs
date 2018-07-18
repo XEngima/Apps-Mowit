@@ -32,7 +32,7 @@ namespace MowControl
                 ForecastParameter parameter = timeSerie.parameters.First(p => p.name == "pmax");
                 if (parameter.values[0] > (decimal)MaxHourlyPrecipitaionMillimeter)
                 {
-                    weatherAheadDescription = "Expecting rain as a maximum of " + parameter.values[0] + " mm/h at " + timeSerie.validTime.ToShortTimeString() + ".";
+                    weatherAheadDescription = "Expecting rain as a maximum of " + parameter.values[0] + " mm/h at " + timeSerie.validTime.ToLocalTime().ToShortTimeString() + ".";
                     return false;
                 }
 
@@ -40,7 +40,7 @@ namespace MowControl
                 parameter = timeSerie.parameters.First(p => p.name == "tstm");
                 if (parameter.values[0] > MaxHourlyThunderPercent)
                 {
-                    weatherAheadDescription = "Thunder warning of " + parameter.values[0] + "% at " + timeSerie.validTime.ToShortTimeString() + ".";
+                    weatherAheadDescription = "Thunder warning of " + parameter.values[0] + "% at " + timeSerie.validTime.ToLocalTime().ToShortTimeString() + ".";
                     return false;
                 }
 
