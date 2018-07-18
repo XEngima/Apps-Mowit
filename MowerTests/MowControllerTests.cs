@@ -473,5 +473,36 @@ namespace MowerTests
             Assert.AreEqual("2018-06-24 03:00", logger.LogItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
             Assert.AreEqual("Failed to contact weather service.", logger.LogItems[1].Message);
         }
+
+        //[TestMethod]
+        //public void CheckAndAct_FailedToGetWeather_DontChangePower()
+        //{
+        //    // Arrange
+        //    var config = TestFactory.NewConfig3To10And16To2300();
+        //    var powerSwitch = new TestPowerSwitch(isActive: false);
+        //    var systemTime = new TestSystemTime(2018, 06, 24, 3, 0);
+
+        //    var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+        //    weatherForecast.SetFailureAndThrowException(true);
+
+        //    var homeSensor = new TimeBasedHomeSensor(config, systemTime);
+
+        //    var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 0, 0, 0));
+
+        //    var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+        //    // Act
+        //    mowController.CheckAndAct();
+
+        //    // Assert
+        //    Assert.IsFalse(powerSwitch.IsOn);
+        //    Assert.AreEqual(0, powerSwitch.TurnOns);
+        //    Assert.AreEqual(0, powerSwitch.TurnOffs);
+
+        //    Assert.AreEqual(2, logger.LogItems.Count);
+        //    Assert.AreEqual(LogType.Failure, logger.LogItems[1].Type);
+        //    Assert.AreEqual("2018-06-24 03:00", logger.LogItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
+        //    Assert.AreEqual("Failed to contact weather service.", logger.LogItems[1].Message);
+        //}
     }
 }

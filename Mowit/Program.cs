@@ -29,13 +29,15 @@ namespace Mowit
             //serializer.Serialize(textWriter, Config);
             //textWriter.Flush();
 
-            Smhi.Init(Config.MowPlannerConfig.CoordLat, Config.MowPlannerConfig.CoordLon, new TimeSpan(1, 0, 0));
             EmailSender.Init(Config.EmailConfig);
 
             var systemTime = new SystemTime();
             var homeSensor = new TimeBasedHomeSensor(Config.MowPlannerConfig, systemTime);
             var powerSwitch = new UrlPowerSwitch(Config.MowPlannerConfig.PowerOnUrl, Config.MowPlannerConfig.PowerOffUrl);
-            var weatherForecast = new WeatherForecast(Config.MowPlannerConfig.MaxHourlyThunderPercent, Config.MowPlannerConfig.MaxHourlyPrecipitaionMillimeter);
+
+            Smhi smhi = new Smhi(Config.MowPlannerConfig.CoordLat, Config.MowPlannerConfig.CoordLon, new TimeSpan(1, 0, 0));
+            var weatherForecast = new WeatherForecast(smhi, Config.MowPlannerConfig.MaxHourlyThunderPercent, Config.MowPlannerConfig.MaxHourlyPrecipitaionMillimeter);
+
             var logger = new MowLogger();
 
             logger.LogItemWritten += Logger_LogItemWritten;

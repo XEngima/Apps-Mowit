@@ -8,11 +8,14 @@ namespace MowPlanning
 {
     public class WeatherForecast : IWeatherForecast
     {
-        public WeatherForecast(int maxHourlyThunderPercent, double maxHourlyPrecipitationMillimeter)
+        public WeatherForecast(Smhi smhi, int maxHourlyThunderPercent, double maxHourlyPrecipitationMillimeter)
         {
+            Smhi = smhi;
             MaxHourlyThunderPercent = maxHourlyThunderPercent;
             MaxHourlyPrecipitaionMillimeter = maxHourlyPrecipitationMillimeter;
         }
+
+        private Smhi Smhi { get; set; }
 
         public bool CheckIfWeatherWillBeGood(int hours, out string weatherAheadDescription)
         {

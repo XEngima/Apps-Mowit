@@ -45,5 +45,16 @@ namespace MowPlanning
         /// Hämtar URL:en för att slå av strömmen.
         /// </summary>
         string PowerOffUrl { get; }
+
+        /// <summary>
+        /// Gets whether a real contact sensor is used or not. If it is, then there can be more logic around
+        /// micro intervals when the mower is coming and leaving. Otherwise the system can only trust the home
+        /// sensor in between whole intervals. For example, if a contact home sensor is used, the mow 
+        /// controller can see when the mower gets stuck and do not return to base.
+        /// </summary>
+        bool UsingContactHomeSensor { get; }
+
+        // Gets the number of hours that the mower can be expected to be on the field without charging.
+        int MaxMowingWithoutCharge { get; }
     }
 }

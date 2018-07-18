@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MowPlanning", "MowPlanning\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mowit", "Mowit\Mowit.csproj", "{B7F1A101-B456-489B-A9E2-2F514472885B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmhiWeatherForecast", "SmhiWeatherForecast\SmhiWeatherForecast.csproj", "{2EA4980C-D540-4529-B69D-D37BEF28979C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MowerTests", "MowerTests\MowerTests.csproj", "{7A164FE3-15B0-4E0B-A60A-7572F6E04F7A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{B7F1A101-B456-489B-A9E2-2F514472885B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7F1A101-B456-489B-A9E2-2F514472885B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7F1A101-B456-489B-A9E2-2F514472885B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2EA4980C-D540-4529-B69D-D37BEF28979C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2EA4980C-D540-4529-B69D-D37BEF28979C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2EA4980C-D540-4529-B69D-D37BEF28979C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2EA4980C-D540-4529-B69D-D37BEF28979C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A164FE3-15B0-4E0B-A60A-7572F6E04F7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A164FE3-15B0-4E0B-A60A-7572F6E04F7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A164FE3-15B0-4E0B-A60A-7572F6E04F7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A164FE3-15B0-4E0B-A60A-7572F6E04F7A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
