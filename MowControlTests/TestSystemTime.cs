@@ -29,7 +29,7 @@ namespace MowerTests
 
         public DateTime Now { get; private set; }
 
-        public void AddMinutes(int minutes)
+        public void TickMinutes(int minutes)
         {
             Now = Now.AddMinutes(minutes);
         }

@@ -10,6 +10,8 @@ namespace MowControl
     /// </summary>
     public class MowController
     {
+        private bool _mowerIsHome;
+
         public MowController(
             IMowPlannerConfig config, 
             IPowerSwitch powerSwitch, 
@@ -93,18 +95,11 @@ namespace MowControl
         private async Task Run()
         {
             Logger.Write(SystemTime.Now, LogType.MowControllerStarted, "Mow Controller started.");
+            _mowerIsHome = HomeSensor.IsHome;
 
             while (true)
             {
-                try
-                {
-                    CheckAndAct();
-                }
-                catch (Exception ex)
-                {
-                    Logger.Write(SystemTime.Now, LogType.Failure, ex.Message);
-                }
-
+                CheckAndAct();
                 Thread.Sleep(60000);
             }
         }
@@ -210,6 +205,21 @@ namespace MowControl
 
             try
             {
+                // Check of mower has entered or exited its home since last time
+                if (_mowerIsHome != HomeSensor.IsHome)
+                {
+                    _mowerIsHome = HomeSensor.IsHome;
+
+                    if (_mowerIsHome)
+                    {
+                        Logger.Write(SystemTime.Now, LogType.MowerEnteredHome, "Mower entered its home.");
+                    }
+                    else
+                    {
+                        Logger.Write(SystemTime.Now, LogType.MowerEnteredHome, "Mower exited its home.");
+                    }
+                }
+
                 // Slå på strömmen
                 if (!PowerSwitch.IsOn)
                 {
@@ -266,9 +276,19 @@ namespace MowControl
                     }
                 }
             }
-            catch (WeatherException ex)
+            catch (Exception ex)
             {
-                Logger.Write(SystemTime.Now, LogType.Failure, ex.Message);
+                string lastMsg = "";
+
+                if (Logger.LogItems.Count > 0)
+                {
+                    lastMsg = Logger.LogItems[Logger.LogItems.Count - 1].Message;
+                }
+
+                if (ex.Message != lastMsg)
+                {
+                    Logger.Write(SystemTime.Now, LogType.Failure, ex.Message);
+                }
             }
         }
     }
