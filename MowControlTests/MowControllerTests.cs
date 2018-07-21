@@ -554,7 +554,7 @@ namespace MowerTests
             Assert.AreEqual(0, powerSwitch.TurnOffs);
 
             Assert.AreEqual(2, logger.LogItems.Count);
-            Assert.AreEqual(LogType.MowerEnteredHome, logger.LogItems[1].Type);
+            Assert.AreEqual(LogType.MowerCame, logger.LogItems[1].Type);
             Assert.AreEqual("2018-06-24 04:31", logger.LogItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
         }
 
@@ -562,29 +562,82 @@ namespace MowerTests
         public void CheckAndAct_NotComingHome_LogMessageTellingMowerIsLost()
         {
             // Arrange
-            var config = TestFactory.NewConfig3To10And16To2300();
+            var config = TestFactory.NewConfig3To10And16To2300(usingContactHomeSensor: true);
             var powerSwitch = new TestPowerSwitch(isActive: true);
             var systemTime = new TestSystemTime(2018, 06, 24, 3, 30);
-
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
-
             var homeSensor = new TestHomeSensor(true);
-
             var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 0, 0, 0));
 
             var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
 
+            homeSensor.SetIsHome(false); // Mower leaves
+            mowController.CheckAndAct(); // Sets mower to away
+            systemTime.TickMinutes(123); // Mote time 123 minutes ahead
+
             // Act
-            mowController.CheckAndAct();
-            systemTime.TickMinutes(150);
-            mowController.CheckAndAct();
+            mowController.CheckAndAct(); // Should see that mower has been lost
 
             // Assert
-            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowerEnteredHome || x.Type == LogType.MowerExitedHome || x.Type == LogType.MowerLost).ToList();
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowerLost).ToList();
 
-            Assert.AreEqual(2, logItems.Count);
+            Assert.AreEqual(1, logItems.Count);
             Assert.AreEqual(LogType.MowerLost, logItems[0].Type);
-            Assert.AreEqual("2018-06-24 06:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+            Assert.AreEqual("2018-06-24 05:33", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+        }
+
+        [TestMethod]
+        public void CheckAndAct_NotComingHome_LogMessageNotRepeated()
+        {
+            // Arrange
+            var config = TestFactory.NewConfig3To10And16To2300(usingContactHomeSensor: true);
+            var powerSwitch = new TestPowerSwitch(isActive: true);
+            var systemTime = new TestSystemTime(2018, 06, 24, 3, 30);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            var homeSensor = new TestHomeSensor(true);
+            var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 0, 0, 0));
+
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+            homeSensor.SetIsHome(false); // Mower leaves
+            mowController.CheckAndAct(); // Sets mower to away
+            systemTime.TickMinutes(123); // Mote time 123 minutes ahead
+            mowController.CheckAndAct();
+            systemTime.TickMinutes(1);
+
+            // Act
+            mowController.CheckAndAct(); // Should see that mower has been lost, but not set the log message again.
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowerLost).ToList();
+
+            Assert.AreEqual(1, logItems.Count);
+        }
+
+        [TestMethod]
+        public void CheckAndAct_NotComingHomeAndNotUsingContactSensor_LostLogMessageNotWritten()
+        {
+            // Arrange
+            var config = TestFactory.NewConfig3To10And16To2300(usingContactHomeSensor: false);
+            var powerSwitch = new TestPowerSwitch(isActive: true);
+            var systemTime = new TestSystemTime(2018, 06, 24, 3, 30);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            var homeSensor = new TestHomeSensor(true);
+            var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 0, 0, 0));
+
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+            homeSensor.SetIsHome(false); // Mower leaves
+            mowController.CheckAndAct(); // Sets mower to away
+            systemTime.TickMinutes(123); // Mote time 123 minutes ahead
+
+            // Act
+            mowController.CheckAndAct(); // Should see that mower has been lost
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowerLost).ToList();
+
+            Assert.AreEqual(0, logItems.Count);
         }
     }
 }

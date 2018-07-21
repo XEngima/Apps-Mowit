@@ -67,7 +67,7 @@ namespace MowerTests
             };
         }
 
-        public static IMowPlannerConfig NewConfig3To10And16To2300()
+        public static IMowPlannerConfig NewConfig3To10And16To2300(bool usingContactHomeSensor = false)
         {
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(3, 0, 10, 0));
@@ -78,7 +78,8 @@ namespace MowerTests
                 TimeIntervals = timeIntervals,
                 AverageWorkPerDayHours = 10,
                 MaxHourlyThunderPercent = 0,
-                MaxHourlyPrecipitaionMillimeter = 0
+                MaxHourlyPrecipitaionMillimeter = 0,
+                UsingContactHomeSensor = usingContactHomeSensor,
             };
         }
 

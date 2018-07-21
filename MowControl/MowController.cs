@@ -214,11 +214,28 @@ namespace MowControl
 
                     if (_mowerIsHome)
                     {
-                        Logger.Write(SystemTime.Now, LogType.MowerEnteredHome, "Mower entered its home.");
+                        Logger.Write(SystemTime.Now, LogType.MowerCame, "Mower came home.");
                     }
                     else
                     {
-                        Logger.Write(SystemTime.Now, LogType.MowerEnteredHome, "Mower exited its home.");
+                        Logger.Write(SystemTime.Now, LogType.MowerLeft, "Mower left.");
+                    }
+                }
+
+                // Check if mower is lost, but only if contact sensor is used.
+                if (Config.UsingContactHomeSensor && !_mowerIsHome)
+                {
+                    var lastMowerLeftLogItem = Logger.LogItems
+                        .OrderByDescending(x => x.Time)
+                        .FirstOrDefault(x => x.Type == LogType.MowerLeft);
+
+                    var lastLogItem = Logger.LogItems
+                        .OrderByDescending(x => x.Time)
+                        .FirstOrDefault(x => x.Type == LogType.MowerLost || x.Type == LogType.MowerCame);
+
+                    if (lastMowerLeftLogItem?.Time.AddHours(Config.MaxMowingWithoutCharge) < SystemTime.Now && lastLogItem?.Type != LogType.MowerLost)
+                    {
+                        Logger.Write(SystemTime.Now, LogType.MowerLost, "Mower seems to be lost. It did not return home as expected.");
                     }
                 }
 

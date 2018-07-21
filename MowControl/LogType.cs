@@ -10,8 +10,8 @@ namespace MowControl
         PowerOn = 2,
         PowerOff = 3,
         Failure = 4,
-        MowerEnteredHome = 5,
-        MowerExitedHome = 6,
+        MowerCame = 5,
+        MowerLeft = 6,
         MowerLost = 7,
     }
 }
