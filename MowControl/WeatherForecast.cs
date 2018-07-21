@@ -29,18 +29,16 @@ namespace MowControl
                                                     .OrderBy(ts => ts.validTime))
             {
                 // Kolla om det kommer att regna för mycket
-                ForecastParameter parameter = timeSerie.parameters.First(p => p.name == "pmax");
-                if (parameter.values[0] > (decimal)MaxHourlyPrecipitaionMillimeter)
+                if (timeSerie.PrecipitationMax > (decimal)MaxHourlyPrecipitaionMillimeter)
                 {
-                    weatherAheadDescription = "Expecting rain as a maximum of " + parameter.values[0] + " mm/h at " + timeSerie.validTime.ToLocalTime().ToShortTimeString() + ".";
+                    weatherAheadDescription = "Expecting rain as a maximum of " + timeSerie.PrecipitationMax + " mm/h at " + timeSerie.validTime.ToLocalTime().ToShortTimeString() + ".";
                     return false;
                 }
 
                 // Kolla om det är för hög sannolikhet för åska
-                parameter = timeSerie.parameters.First(p => p.name == "tstm");
-                if (parameter.values[0] > MaxHourlyThunderPercent)
+                if (timeSerie.ThunderProbability > MaxHourlyThunderPercent)
                 {
-                    weatherAheadDescription = "Thunder warning of " + parameter.values[0] + "% at " + timeSerie.validTime.ToLocalTime().ToShortTimeString() + ".";
+                    weatherAheadDescription = "Thunder warning of " + timeSerie.ThunderProbability + "% at " + timeSerie.validTime.ToLocalTime().ToShortTimeString() + ".";
                     return false;
                 }
 
