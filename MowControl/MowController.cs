@@ -26,6 +26,8 @@ namespace MowControl
             SystemTime = systemTime;
             HomeSensor = homeSensor;
             Logger = logger;
+
+            _mowerIsHome = HomeSensor.IsHome;
         }
 
         private IMowPlannerConfig Config { get; set; }
