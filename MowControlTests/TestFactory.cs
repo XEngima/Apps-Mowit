@@ -98,21 +98,10 @@ namespace MowerTests
             return new TestWeatherForecast(false, systemTime);
         }
 
-        public static IMowLogger NewMowLogger(int startItemDaysAgo = 0)
+        public static IMowLogger NewMowLogger(DateTime mowLoggerStartTime)
         {
             var logger = new MowLogger();
-            DateTime date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
-            date = date.AddDays(-startItemDaysAgo);
-
-            logger.Write(date, LogType.MowControllerStarted, "Mow controller started.");
-
-            return logger;
-        }
-
-        public static IMowLogger NewMowLogger(DateTime startItemDate)
-        {
-            var logger = new MowLogger();
-            logger.Write(startItemDate, LogType.MowControllerStarted, "Mow controller started.");
+            logger.Write(mowLoggerStartTime, LogType.MowControllerStarted, "Mow controller started.");
             return logger;
         }
     }

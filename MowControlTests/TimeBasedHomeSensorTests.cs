@@ -24,8 +24,9 @@ namespace MowerTests
                 MaxHourlyPrecipitaionMillimeter = 0
             };
             var systemTime = new TestSystemTime(new DateTime(2018, 6, 22, 5, 55, 0));
+            var powerSwitch = new TestPowerSwitch(true);
 
-            var homeSensor = new TimeBasedHomeSensor(config, systemTime);
+            var homeSensor = new TimeBasedHomeSensor(config, powerSwitch, systemTime);
 
             // Act
 
@@ -48,8 +49,9 @@ namespace MowerTests
                 MaxHourlyPrecipitaionMillimeter = 0
             };
             var systemTime = new TestSystemTime(new DateTime(2018, 6, 22, 00, 15, 0));
+            var powerSwitch = new TestPowerSwitch(true);
 
-            var homeSensor = new TimeBasedHomeSensor(config, systemTime);
+            var homeSensor = new TimeBasedHomeSensor(config, powerSwitch, systemTime);
 
             // Act
 
@@ -72,8 +74,9 @@ namespace MowerTests
                 MaxHourlyPrecipitaionMillimeter = 0
             };
             var systemTime = new TestSystemTime(new DateTime(2018, 6, 22, 1, 00, 0));
+            var powerSwitch = new TestPowerSwitch(true);
 
-            var homeSensor = new TimeBasedHomeSensor(config, systemTime);
+            var homeSensor = new TimeBasedHomeSensor(config, powerSwitch, systemTime);
 
             // Act
 
@@ -96,8 +99,9 @@ namespace MowerTests
                 MaxHourlyPrecipitaionMillimeter = 0
             };
             var systemTime = new TestSystemTime(new DateTime(2018, 6, 22, 11, 10, 0));
+            var powerSwitch = new TestPowerSwitch(true);
 
-            var homeSensor = new TimeBasedHomeSensor(config, systemTime);
+            var homeSensor = new TimeBasedHomeSensor(config, powerSwitch, systemTime);
 
             // Act
 
@@ -106,7 +110,7 @@ namespace MowerTests
         }
 
         [TestMethod]
-        public void IsHome_JustStoppedWorkingAndOnItsWayHome_IsNotHome()
+        public void IsHome_JustStoppedMowingAndOnItsWayHome_IsNotHome()
         {
             // Arrange
             var timeIntervals = new List<TimeInterval>();
@@ -120,13 +124,46 @@ namespace MowerTests
                 MaxHourlyPrecipitaionMillimeter = 0
             };
             var systemTime = new TestSystemTime(new DateTime(2018, 6, 22, 12, 15, 0));
+            var powerSwitch = new TestPowerSwitch(true);
 
-            var homeSensor = new TimeBasedHomeSensor(config, systemTime);
+            var homeSensor = new TimeBasedHomeSensor(config, powerSwitch, systemTime);
 
             // Act
+            bool isHome = homeSensor.IsHome;
 
             // Assert
-            Assert.IsFalse(homeSensor.IsHome);
+            Assert.IsFalse(isHome);
+        }
+
+        [TestMethod]
+        public void IsHome_AfterAnIntervalWithPowerOff_IsStillHome()
+        {
+            // Arrange
+            var timeIntervals = new List<TimeInterval>();
+            timeIntervals.Add(new TimeInterval(6, 0, 12, 0));
+
+            var config = new MowPlannerConfig()
+            {
+                TimeIntervals = timeIntervals,
+                AverageWorkPerDayHours = 12,
+                MaxHourlyThunderPercent = 0,
+                MaxHourlyPrecipitaionMillimeter = 0
+            };
+
+            var systemTime = new TestSystemTime(new DateTime(2018, 6, 22, 11, 59, 0));
+            var powerSwitch = new TestPowerSwitch(false);
+
+            var homeSensor = new TimeBasedHomeSensor(config, powerSwitch, systemTime);
+
+            var isHome = homeSensor.IsHome;
+            systemTime.TickMinutes(2);
+            powerSwitch.TurnOn();
+
+            // Act
+            isHome = homeSensor.IsHome;
+
+            // Assert
+            Assert.IsTrue(isHome);
         }
     }
 }

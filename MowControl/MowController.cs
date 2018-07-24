@@ -67,6 +67,35 @@ namespace MowControl
         }
 
         /// <summary>
+        /// Hämtar föregående intervall. Om mitt i ett intervall hämtas intervallet efter det.
+        /// </summary>
+        public TimeInterval PrevInterval
+        {
+            get
+            {
+                // Get prev interval
+                var prevInterval = Config.TimeIntervals
+                    .OrderBy(i => i.StartHour)
+                    .ThenBy(i => i.StartMin)
+                    .FirstOrDefault(i =>
+                        i.StartHour < SystemTime.Now.Hour ||
+                        (i.StartHour == SystemTime.Now.Hour && i.StartMin <= SystemTime.Now.Minute));
+
+                // Om vi fick null betyder det att tiden passerat sista intervallet, och då blir föregående intervall 
+                // istället det sista på dagen.
+                if (prevInterval == null)
+                {
+                    prevInterval = Config.TimeIntervals
+                        .OrderByDescending(i => i.StartHour)
+                        .ThenByDescending(i => i.StartMin)
+                        .FirstOrDefault();
+                }
+
+                return prevInterval;
+            }
+        }
+
+        /// <summary>
         /// Hämtar nästa intervall. Om mitt i ett intervall returneras det.
         /// </summary>
         public TimeInterval NextOrCurrentInterval
@@ -205,6 +234,28 @@ namespace MowControl
                 throw new InvalidOperationException();
             }
 
+            bool betweenIntervals = true;
+            foreach (var interval in Config.TimeIntervals)
+            {
+                // Om ett intervall håller på
+                if (interval.ContainsTime(SystemTime.Now))
+                {
+                    betweenIntervals = false;
+                }
+            }
+
+            bool beforeIntervalStart = false;
+            bool afterIntervalEnd = false;
+
+            if (betweenIntervals)
+            {
+                DateTime minutesFromStart = (new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, NextInterval.StartHour, NextInterval.StartMin, 0).AddMinutes(-5));
+                beforeIntervalStart = SystemTime.Now >= minutesFromStart;
+
+                DateTime minutesFromEnd = (new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, PrevInterval.EndHour, PrevInterval.EndMin, 0).AddMinutes(5));
+                afterIntervalEnd = SystemTime.Now >= minutesFromEnd;
+            }
+
             try
             {
                 // Check of mower has entered or exited its home since last time
@@ -239,32 +290,44 @@ namespace MowControl
                     }
                 }
 
-                // Slå på strömmen
+                // If power is turned off
+
                 if (!PowerSwitch.IsOn)
                 {
                     foreach (var interval in Config.TimeIntervals)
                     {
-                        DateTime minutesFromEnd = (new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, interval.EndHour, interval.EndMin, 0).AddMinutes(-10));
-
-                        // Om ett intervall håller på, och om det inte är nära sitt slut
-                        if (interval.ContainsTime(SystemTime.Now) && SystemTime.Now < minutesFromEnd)
+                        // Om ett intervall håller på
+                        if (interval.ContainsTime(SystemTime.Now))
                         {
-                            int forecastHours = interval.EndHour - SystemTime.Now.Hour + 2;
-                            string weatherAheadDescription;
+                            DateTime minutesFromEnd = (new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, interval.EndHour, interval.EndMin, 0).AddMinutes(-10));
 
-                            if (WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out weatherAheadDescription) && MowingNecessary())
+                            // If the interval is not close to end
+                            if (SystemTime.Now < minutesFromEnd)
                             {
-                                PowerSwitch.TurnOn();
-                                Logger.Write(SystemTime.Now, LogType.PowerOn, "Power was turned on. " + weatherAheadDescription);
+                                int forecastHours = interval.EndHour - SystemTime.Now.Hour + 2;
+                                string weatherAheadDescription;
+
+                                if (WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out weatherAheadDescription) && MowingNecessary())
+                                {
+                                    PowerSwitch.TurnOn();
+                                    Logger.Write(SystemTime.Now, LogType.PowerOn, "Power was turned on. " + weatherAheadDescription);
+                                }
                             }
                         }
                     }
+
+                    if (betweenIntervals && HomeSensor.IsHome && !beforeIntervalStart && afterIntervalEnd)
+                    {
+                        PowerSwitch.TurnOn();
+                        Logger.Write(SystemTime.Now, LogType.PowerOn, "Power was turned on. In between intervals.");
+                    }
                 }
 
-                // Slå av strömmen
+                // If power is turned on
+
                 if (PowerSwitch.IsOn)
                 {
-                    if (!NextInterval.ContainsTime(SystemTime.Now) && HomeSensor.IsHome)
+                    if ((!betweenIntervals || beforeIntervalStart) && !NextInterval.ContainsTime(SystemTime.Now) && HomeSensor.IsHome)
                     {
                         DateTime nextIntervalExactStartTime = new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, NextInterval.StartHour, NextInterval.StartMin, 0);
                         if (nextIntervalExactStartTime < SystemTime.Now)

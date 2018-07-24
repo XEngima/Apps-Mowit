@@ -32,8 +32,8 @@ namespace Mowit
             EmailSender.Init(Config.EmailConfig);
 
             var systemTime = new SystemTime();
-            var homeSensor = new TimeBasedHomeSensor(Config.MowPlannerConfig, systemTime);
             var powerSwitch = new UrlPowerSwitch(Config.MowPlannerConfig.PowerOnUrl, Config.MowPlannerConfig.PowerOffUrl);
+            var homeSensor = new TimeBasedHomeSensor(Config.MowPlannerConfig, powerSwitch, systemTime);
 
             Smhi smhi = new Smhi(Config.MowPlannerConfig.CoordLat, Config.MowPlannerConfig.CoordLon, new TimeSpan(1, 0, 0));
             var weatherForecast = new WeatherForecast(smhi, Config.MowPlannerConfig.MaxHourlyThunderPercent, Config.MowPlannerConfig.MaxHourlyPrecipitaionMillimeter);

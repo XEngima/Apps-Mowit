@@ -17,7 +17,7 @@ namespace MowControl
             PowerOffUrl = "";
             CoordLat = 0;
             CoordLon = 0;
-            UsingContactHomeSensor = true;
+            UsingContactHomeSensor = false;
             MaxMowingWithoutCharge = 2;
         }
 

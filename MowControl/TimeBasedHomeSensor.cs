@@ -13,11 +13,17 @@ namespace MowControl
 
         private IMowPlannerConfig _config;
         private ISystemTime _systemTime;
+        private IPowerSwitch _powerSwitch;
+        private bool _wasHomeDuringLastInterval;
+        bool _firstCheck;
 
-        public TimeBasedHomeSensor(IMowPlannerConfig config, ISystemTime systemTime)
+        public TimeBasedHomeSensor(IMowPlannerConfig config, IPowerSwitch powerSwitch, ISystemTime systemTime)
         {
             _config = config;
             _systemTime = systemTime;
+            _powerSwitch = powerSwitch;
+            _wasHomeDuringLastInterval = true;
+            _firstCheck = true;
         }
 
         /// <summary>
@@ -26,12 +32,20 @@ namespace MowControl
         public bool IsHome {
             get
             {
-                bool isHome = true;
+                if (_config.TimeIntervals?.Count == 0)
+                {
+                    return true;
+                }
 
+                bool isHome = true;
+                bool inAnyInterval = false;
+
+                // If power is off, the mower is always at home.
                 foreach (var timeInterval in _config.TimeIntervals)
                 {
                     if (timeInterval.ContainsTime(_systemTime.Now))
                     {
+                        inAnyInterval = true;
                         isHome = false;
                         break;
                     }
@@ -58,6 +72,22 @@ namespace MowControl
                     }
                 }
 
+                if (!_powerSwitch.IsOn)
+                {
+                    isHome = true;
+                }
+
+                if (inAnyInterval)
+                {
+                    _wasHomeDuringLastInterval = isHome;
+                }
+
+                if (!_firstCheck && !inAnyInterval && _wasHomeDuringLastInterval)
+                {
+                    return true;
+                }
+
+                _firstCheck = false;
                 return isHome;
             }
         }
