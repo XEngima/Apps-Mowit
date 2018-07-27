@@ -57,7 +57,8 @@ namespace MowerTests
             };
             var powerSwitch = new TestPowerSwitch();
             var homeSensor = new TestHomeSensor(true);
-            var mowController = new MowController(config, powerSwitch, null, null, homeSensor, null);
+            var systemTime = new SystemTime();
+            var mowController = new MowController(config, powerSwitch, null, systemTime, homeSensor, null);
             Exception receivedException = null;
 
             // Act
@@ -98,7 +99,7 @@ namespace MowerTests
 
             Assert.AreEqual(1, logItems.Count);
             Assert.AreEqual(LogType.PowerOn, logItems[0].Type);
-            string expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "06:00";
+            string expectedLogDate = "2018-07-24 06:00";
             Assert.AreEqual(expectedLogDate, logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
             Assert.IsTrue(logItems[0].Message.StartsWith("Power was turned on."));
         }
@@ -156,7 +157,7 @@ namespace MowerTests
 
             Assert.AreEqual(1, logItems.Count);
             Assert.AreEqual(LogType.PowerOff, logItems[0].Type);
-            string expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "12:55";
+            string expectedLogDate = "2018-07-24 12:55";
             Assert.AreEqual(expectedLogDate, logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
             Assert.IsTrue(logItems[0].Message.StartsWith("Power was turned off."));
         }
@@ -184,7 +185,7 @@ namespace MowerTests
 
             Assert.AreEqual(1, logItems.Count);
             Assert.AreEqual(LogType.PowerOff, logItems[0].Type);
-            string expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "12:58";
+            string expectedLogDate = "2018-07-24 12:58";
             Assert.AreEqual(expectedLogDate, logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
             Assert.IsTrue(logItems[0].Message.StartsWith("Power was turned off."));
         }
@@ -236,7 +237,7 @@ namespace MowerTests
             Assert.AreEqual(3, logItems.Count);
 
             Assert.AreEqual(LogType.PowerOff, logItems[1].Type);
-            string expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "23:55";
+            string expectedLogDate = "2018-07-24 23:55";
             Assert.AreEqual(expectedLogDate, logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
             Assert.IsTrue(logItems[1].Message.StartsWith("Power was turned off."));
         }
@@ -267,7 +268,7 @@ namespace MowerTests
             Assert.AreEqual(3, logItems.Count);
 
             Assert.AreEqual(LogType.PowerOff, logItems[1].Type);
-            string expectedLogDate = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd ") + "05:55";
+            string expectedLogDate = "2018-07-25 05:55";
             Assert.AreEqual(expectedLogDate, logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
             Assert.IsTrue(logItems[1].Message.StartsWith("Power was turned off."));
         }
@@ -298,12 +299,12 @@ namespace MowerTests
 
             Assert.AreEqual(2, logItems.Count);
             Assert.AreEqual(LogType.PowerOff, logItems[0].Type);
-            string expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "05:55";
+            string expectedLogDate = "2018-07-24 05:55";
             Assert.AreEqual(expectedLogDate, logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
             Assert.IsTrue(logItems[0].Message.StartsWith("Power was turned off."));
 
             Assert.AreEqual(LogType.PowerOn, logItems[1].Type);
-            expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "12:05";
+            expectedLogDate = "2018-07-24 12:05";
             Assert.AreEqual(expectedLogDate, logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
             Assert.IsTrue(logItems[1].Message.StartsWith("Power was turned on."));
         }
@@ -334,12 +335,12 @@ namespace MowerTests
             Assert.AreEqual(2, logItems.Count);
 
             Assert.AreEqual(LogType.PowerOff, logItems[0].Type);
-            string expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "17:55";
+            string expectedLogDate = "2018-07-24 17:55";
             Assert.AreEqual(expectedLogDate, logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
             Assert.IsTrue(logItems[0].Message.StartsWith("Power was turned off."));
 
             Assert.AreEqual(LogType.PowerOn, logItems[1].Type);
-            expectedLogDate = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd ") + "06:00";
+            expectedLogDate = "2018-07-25 06:00";
             Assert.AreEqual(expectedLogDate, logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
             Assert.IsTrue(logItems[1].Message.StartsWith("Power was turned on."));
         }
@@ -667,8 +668,74 @@ namespace MowerTests
             var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOn).ToList();
 
             Assert.AreEqual(1, logItems.Count);
-            string expectedLogDate = DateTime.Now.ToString("yyyy-MM-dd ") + "10:05";
+            string expectedLogDate = "2018-07-24 10:05";
             Assert.AreEqual(expectedLogDate, logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+        }
+
+        [TestMethod]
+        public void CheckAndAct_BadWeatherAtEndOfInterval_CurrentTurnedOffBeforeTnterval()
+        {
+            // Arrange
+            var config = TestFactory.NewConfig3To10And16To2300(usingContactHomeSensor: false);
+            var systemTime = new TestSystemTime(2018, 7, 24, 15, 0);
+            var powerSwitch = new TestPowerSwitch(isActive: true);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            weatherForecast.AddExpectation(false, new DateTime(2018, 7, 24, 21, 30, 0));
+            var homeSensor = new TestHomeSensor(isHome: true);
+            var logger = TestFactory.NewMowLogger(systemTime.Now);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+            // Act
+            RunOverTime(mowController, systemTime, 10, 0);
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOff || x.Type == LogType.PowerOn).ToList();
+
+            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(2, logItems.Count);
+
+            Assert.AreEqual(LogType.PowerOff, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 15:55", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+
+            Assert.AreEqual(LogType.PowerOn, logItems[1].Type);
+            Assert.AreEqual("2018-07-24 23:05", logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
+        }
+
+        [TestMethod]
+        public void CheckAndAct_BadWeatherAtEndOfIntervalUsingContactSensor_CurrentTurnedOffInTnterval()
+        {
+            // Arrange
+            var config = TestFactory.NewConfig3To10And16To2300(usingContactHomeSensor: true, maxMowingWithoutCharge: 2);
+            var systemTime = new TestSystemTime(2018, 7, 24, 15, 0);
+            var powerSwitch = new TestPowerSwitch(isActive: true);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            weatherForecast.AddExpectation(false, new DateTime(2018, 7, 24, 21, 30, 0));
+            var homeSensor = new TestHomeSensor(isHome: true);
+            var logger = TestFactory.NewMowLogger(systemTime.Now);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+            // Act
+            RunOverTime(mowController, systemTime, 1, 0);
+            homeSensor.SetIsHome(false);
+            RunOverTime(mowController, systemTime, 1, 30);
+            homeSensor.SetIsHome(true);
+            RunOverTime(mowController, systemTime, 1, 0);
+            homeSensor.SetIsHome(false);
+            RunOverTime(mowController, systemTime, 1, 30);
+            homeSensor.SetIsHome(true);
+            RunOverTime(mowController, systemTime, 5, 0);
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOff || x.Type == LogType.PowerOn).ToList();
+
+            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(2, logItems.Count);
+
+            Assert.AreEqual(LogType.PowerOff, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 20:30", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+
+            Assert.AreEqual(LogType.PowerOn, logItems[1].Type);
+            Assert.AreEqual("2018-07-24 23:05", logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
         }
 
     }

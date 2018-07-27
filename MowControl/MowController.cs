@@ -75,8 +75,8 @@ namespace MowControl
             {
                 // Get prev interval
                 var prevInterval = Config.TimeIntervals
-                    .OrderBy(i => i.StartHour)
-                    .ThenBy(i => i.StartMin)
+                    .OrderByDescending(i => i.StartHour)
+                    .ThenByDescending(i => i.StartMin)
                     .FirstOrDefault(i =>
                         i.StartHour < SystemTime.Now.Hour ||
                         (i.StartHour == SystemTime.Now.Hour && i.StartMin <= SystemTime.Now.Minute));
@@ -96,7 +96,7 @@ namespace MowControl
         }
 
         /// <summary>
-        /// Hämtar nästa intervall. Om mitt i ett intervall returneras det.
+        /// Gets next interval. An interval currently active is returned.
         /// </summary>
         public TimeInterval NextOrCurrentInterval
         {
@@ -115,6 +115,21 @@ namespace MowControl
                 }
 
                 return NextInterval;
+            }
+        }
+
+        /// <summary>
+        /// Gets next interval's start time.
+        /// </summary>
+        public DateTime NextIntervalStartTime { get
+            {
+                DateTime nextIntervalStartTime = new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, NextInterval.StartHour, NextInterval.StartMin, 0);
+                if (nextIntervalStartTime < SystemTime.Now)
+                {
+                    nextIntervalStartTime = nextIntervalStartTime.AddDays(1);
+                }
+
+                return nextIntervalStartTime;
             }
         }
 
@@ -225,10 +240,45 @@ namespace MowControl
         }
 
         /// <summary>
+        /// Gets the time when the mower came. SystemTime.Now if the mower has not came back or if the time is unknown.
+        /// </summary>
+        private DateTime MowerCameTime
+        {
+            get
+            {
+                if (HomeSensor.IsHome)
+                {
+                    var mowerLeftLogItem = Logger.LogItems
+                        .OrderByDescending(x => x.Time)
+                        .FirstOrDefault(x => x.Type == LogType.MowerLeft);
+
+                    var mowerCameLogItem = Logger.LogItems
+                        .OrderByDescending(x => x.Time)
+                        .FirstOrDefault(x => x.Type == LogType.MowerCame);
+
+                    if (mowerCameLogItem != null)
+                    {
+                        if (mowerLeftLogItem == null || mowerLeftLogItem.Time < mowerCameLogItem.Time)
+                        {
+                            return mowerCameLogItem.Time;
+                        }
+                    }
+                }
+
+                return SystemTime.Now;
+            }
+        }
+
+        /// <summary>
         /// Kollar om strömmen ska slås på eller av och gör det i sådana fall.
         /// </summary>
         public void CheckAndAct()
         {
+            //if (SystemTime.Now.ToString("HH:mm") == "20:30")
+            //{
+            //    int debug = 0;
+            //}
+
             if (Config.TimeIntervals == null)
             {
                 throw new InvalidOperationException();
@@ -245,15 +295,14 @@ namespace MowControl
             }
 
             bool beforeIntervalStart = false;
-            bool afterIntervalEnd = false;
+            bool safelyAfterIntervalEnd = false;
 
             if (betweenIntervals)
             {
-                DateTime minutesFromStart = (new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, NextInterval.StartHour, NextInterval.StartMin, 0).AddMinutes(-5));
-                beforeIntervalStart = SystemTime.Now >= minutesFromStart;
+                beforeIntervalStart = SystemTime.Now >= NextIntervalStartTime.AddMinutes(-5);
 
                 DateTime minutesFromEnd = (new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, PrevInterval.EndHour, PrevInterval.EndMin, 0).AddMinutes(5));
-                afterIntervalEnd = SystemTime.Now >= minutesFromEnd;
+                safelyAfterIntervalEnd = SystemTime.Now >= minutesFromEnd;
             }
 
             try
@@ -316,7 +365,7 @@ namespace MowControl
                         }
                     }
 
-                    if (betweenIntervals && HomeSensor.IsHome && !beforeIntervalStart && afterIntervalEnd)
+                    if (betweenIntervals && HomeSensor.IsHome && !beforeIntervalStart && safelyAfterIntervalEnd)
                     {
                         PowerSwitch.TurnOn();
                         Logger.Write(SystemTime.Now, LogType.PowerOn, "Power was turned on. In between intervals.");
@@ -336,10 +385,17 @@ namespace MowControl
                         }
                         double minutesLeftToIntervalStart = (nextIntervalExactStartTime - SystemTime.Now).TotalMinutes;
 
-                        if (minutesLeftToIntervalStart <= 5)
+                        // If there will be rain, turn off power
+                        int forecastHours = NextInterval.ToTimeSpan().Hours + 2;
+
+                        // If a contact home sensor is used, weather can be checked for much smaller time spans
+                        if (Config.UsingContactHomeSensor)
                         {
-                            // If there will be rain, turn off power
-                            int forecastHours = NextInterval.ToTimeSpan().Hours + 2;
+                            forecastHours = Config.MaxMowingWithoutCharge + 1;
+                        }
+
+                        if (minutesLeftToIntervalStart <= 5 || !betweenIntervals && HomeSensor.IsHome && (SystemTime.Now - MowerCameTime).TotalMinutes >= 30)
+                        {
                             string weatherAheadDescription;
 
                             if (!WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out weatherAheadDescription))
