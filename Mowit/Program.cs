@@ -15,34 +15,38 @@ namespace Mowit
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Press ENTER to start the Mowit service.");
-            Console.ReadLine();
-
-            string path = System.IO.Directory.GetCurrentDirectory();
+            string path = Directory.GetCurrentDirectory();
             var serializer = new XmlSerializer(typeof(MowitConfig));
+
+            if (args.Length >= 1 && args[0].Contains("/configexample"))
+            {
+                TextWriter textWriter = new StreamWriter(Path.Combine(path, "MowitSettings.xml.example"));
+                serializer.Serialize(textWriter, MowitConfig.GetExampleConfig());
+                textWriter.Flush();
+
+                return;
+            }
 
             TextReader textReader = new StreamReader(Path.Combine(path, "MowitSettings.xml"));
             Config = (MowitConfig)serializer.Deserialize(textReader);
 
-            // When writing a file
-            //TextWriter textWriter = new StreamWriter(Path.Combine(path, "MowitSettingsOut.xml"));
-            //serializer.Serialize(textWriter, Config);
-            //textWriter.Flush();
+            Console.WriteLine("Press ENTER to start the Mowit service.");
+            Console.ReadLine();
 
             EmailSender.Init(Config.EmailConfig);
 
             var systemTime = new SystemTime();
-            var powerSwitch = new UrlPowerSwitch(Config.MowPlannerConfig.PowerOnUrl, Config.MowPlannerConfig.PowerOffUrl);
-            var homeSensor = new TimeBasedHomeSensor(Config.MowPlannerConfig, powerSwitch, systemTime);
+            var powerSwitch = new UrlPowerSwitch(Config.MowControlConfig.PowerOnUrl, Config.MowControlConfig.PowerOffUrl);
+            var homeSensor = new TimeBasedHomeSensor(Config.MowControlConfig, powerSwitch, systemTime);
 
-            Smhi smhi = new Smhi(Config.MowPlannerConfig.CoordLat, Config.MowPlannerConfig.CoordLon, new TimeSpan(1, 0, 0));
-            var weatherForecast = new WeatherForecast(smhi, Config.MowPlannerConfig.MaxHourlyThunderPercent, Config.MowPlannerConfig.MaxHourlyPrecipitaionMillimeter);
+            Smhi smhi = new Smhi(Config.MowControlConfig.CoordLat, Config.MowControlConfig.CoordLon, new TimeSpan(1, 0, 0));
+            var weatherForecast = new WeatherForecast(smhi, Config.MowControlConfig.MaxHourlyThunderPercent, Config.MowControlConfig.MaxHourlyPrecipitaionMillimeter, Config.MowControlConfig.MaxRelativeHumidityPercent);
 
             var logger = new MowLogger();
 
             logger.LogItemWritten += Logger_LogItemWritten;
 
-            var mowController = new MowController(Config.MowPlannerConfig, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var mowController = new MowController(Config.MowControlConfig, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
             var task = mowController.StartAsync();
         }
 

@@ -7,12 +7,12 @@ namespace MowerTests
 {
     public static class TestFactory
     {
-        public static IMowPlannerConfig NewConfig6To12()
+        public static IMowControlConfig NewConfig6To12()
         {
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(6, 0, 12, 0));
 
-            return new MowPlannerConfig()
+            return new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
                 AverageWorkPerDayHours = 12,
@@ -22,13 +22,13 @@ namespace MowerTests
 
         }
 
-        public static IMowPlannerConfig NewConfig6To12And13To19()
+        public static IMowControlConfig NewConfig6To12And13To19()
         {
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(6, 0, 12, 0));
             timeIntervals.Add(new TimeInterval(13, 0, 19, 0));
 
-            return new MowPlannerConfig()
+            return new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
                 AverageWorkPerDayHours = 8,
@@ -37,13 +37,13 @@ namespace MowerTests
             };
         }
 
-        public static IMowPlannerConfig NewConfig6To12And18To2359()
+        public static IMowControlConfig NewConfig6To12And18To2359()
         {
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(6, 0, 12, 0));
             timeIntervals.Add(new TimeInterval(18, 0, 23, 59));
 
-            return new MowPlannerConfig()
+            return new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
                 AverageWorkPerDayHours = 8,
@@ -52,13 +52,13 @@ namespace MowerTests
             };
         }
 
-        public static IMowPlannerConfig NewConfig0To6And12To18()
+        public static IMowControlConfig NewConfig0To6And12To18()
         {
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(0, 0, 6, 0));
             timeIntervals.Add(new TimeInterval(12, 0, 18, 0));
 
-            return new MowPlannerConfig()
+            return new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
                 AverageWorkPerDayHours = 8,
@@ -67,20 +67,20 @@ namespace MowerTests
             };
         }
 
-        public static IMowPlannerConfig NewConfig3To10And16To2300(bool usingContactHomeSensor = false, int maxMowingWithoutCharge = 2)
+        public static IMowControlConfig NewConfig3To10And16To2300(bool usingContactHomeSensor = false, int maxMowingWithoutCharge = 2)
         {
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(3, 0, 10, 0));
             timeIntervals.Add(new TimeInterval(16, 0, 23, 00));
 
-            return new MowPlannerConfig()
+            return new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
                 AverageWorkPerDayHours = 10,
                 MaxHourlyThunderPercent = 0,
                 MaxHourlyPrecipitaionMillimeter = 0,
                 UsingContactHomeSensor = usingContactHomeSensor,
-                MaxMowingWithoutCharge = maxMowingWithoutCharge,
+                MaxMowingHoursWithoutCharge = maxMowingWithoutCharge,
             };
         }
 

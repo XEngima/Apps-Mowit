@@ -16,7 +16,7 @@ namespace MowerTests
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(6, 0, 12, 0));
 
-            var config = new MowPlannerConfig()
+            var config = new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
                 AverageWorkPerDayHours = 12,
@@ -41,7 +41,7 @@ namespace MowerTests
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(18, 0, 23, 59));
 
-            var config = new MowPlannerConfig()
+            var config = new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
                 AverageWorkPerDayHours = 12,
@@ -66,7 +66,7 @@ namespace MowerTests
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(18, 0, 23, 59));
 
-            var config = new MowPlannerConfig()
+            var config = new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
                 AverageWorkPerDayHours = 12,
@@ -91,7 +91,7 @@ namespace MowerTests
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(6, 0, 12, 0));
 
-            var config = new MowPlannerConfig()
+            var config = new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
                 AverageWorkPerDayHours = 12,
@@ -116,7 +116,7 @@ namespace MowerTests
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(6, 0, 12, 0));
 
-            var config = new MowPlannerConfig()
+            var config = new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
                 AverageWorkPerDayHours = 12,
@@ -142,7 +142,7 @@ namespace MowerTests
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(6, 0, 12, 0));
 
-            var config = new MowPlannerConfig()
+            var config = new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
                 AverageWorkPerDayHours = 12,

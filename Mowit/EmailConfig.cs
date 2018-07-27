@@ -6,6 +6,20 @@ namespace Mowit
 {
     public class EmailConfig
     {
+        public EmailConfig()
+        {
+            SendEmails = false;
+            FromAddress = "mymower@gmail.com";
+            FromName = "Mowit";
+            ToAddress = "mypersonalemail.gmail.com";
+            ToName = "My Name";
+            Smtp = "smtp.gmail.com";
+            Port = 587;
+            UseDefaultCredentials = false;
+            UserName = "username";
+            Password = "password";
+        }
+
         public bool SendEmails { get; set; }
 
         public string FromAddress { get; set; }

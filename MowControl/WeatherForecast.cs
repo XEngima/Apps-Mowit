@@ -8,11 +8,12 @@ namespace MowControl
 {
     public class WeatherForecast : IWeatherForecast
     {
-        public WeatherForecast(Smhi smhi, int maxHourlyThunderPercent, double maxHourlyPrecipitationMillimeter)
+        public WeatherForecast(Smhi smhi, int maxHourlyThunderPercent, double maxHourlyPrecipitationMillimeter, int maxRelativeHumidityPercent)
         {
             Smhi = smhi;
             MaxHourlyThunderPercent = maxHourlyThunderPercent;
             MaxHourlyPrecipitaionMillimeter = maxHourlyPrecipitationMillimeter;
+            MaxRelativeHumidityPercent = maxRelativeHumidityPercent;
         }
 
         private Smhi Smhi { get; set; }
@@ -31,14 +32,21 @@ namespace MowControl
                 // Kolla om det kommer att regna för mycket
                 if (timeSerie.PrecipitationMax > (decimal)MaxHourlyPrecipitaionMillimeter)
                 {
-                    weatherAheadDescription = "Expecting rain as a maximum of " + timeSerie.PrecipitationMax + " mm/h at " + timeSerie.validTime.ToLocalTime().ToShortTimeString() + ".";
+                    weatherAheadDescription = "Expecting rain as a maximum of " + timeSerie.PrecipitationMax + " mm/h at " + timeSerie.ValidTimeLocal.ToShortTimeString() + ".";
+                    return false;
+                }
+
+                // Kolla om det kommer att bli för hög luftfuktighet
+                if (timeSerie.RelativeHumidity > MaxRelativeHumidityPercent)
+                {
+                    weatherAheadDescription = "Expecting a relative humidity of " + timeSerie.RelativeHumidity + "% at " + timeSerie.ValidTimeLocal.ToShortTimeString() + ".";
                     return false;
                 }
 
                 // Kolla om det är för hög sannolikhet för åska
                 if (timeSerie.ThunderProbability > MaxHourlyThunderPercent)
                 {
-                    weatherAheadDescription = "Thunder warning of " + timeSerie.ThunderProbability + "% at " + timeSerie.validTime.ToLocalTime().ToShortTimeString() + ".";
+                    weatherAheadDescription = "Thunder warning of " + timeSerie.ThunderProbability + "% at " + timeSerie.ValidTimeLocal.ToShortTimeString() + ".";
                     return false;
                 }
 
@@ -61,5 +69,7 @@ namespace MowControl
         private int MaxHourlyThunderPercent { get; set; }
 
         private double MaxHourlyPrecipitaionMillimeter { get; set; }
+
+        private int MaxRelativeHumidityPercent { get; set; }
     }
 }

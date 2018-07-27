@@ -5,9 +5,9 @@ using System.Text;
 
 namespace MowControl
 {
-    public class MowPlannerConfig : IMowPlannerConfig
+    public class MowControlConfig : IMowControlConfig
     {
-        public MowPlannerConfig()
+        public MowControlConfig()
         {
             TimeIntervals = new List<TimeInterval>();
             AverageWorkPerDayHours = 24;
@@ -18,7 +18,8 @@ namespace MowControl
             CoordLat = 0;
             CoordLon = 0;
             UsingContactHomeSensor = false;
-            MaxMowingWithoutCharge = 2;
+            MaxMowingHoursWithoutCharge = 2;
+            MaxRelativeHumidityPercent = 100;
         }
 
         public List<TimeInterval> TimeIntervals { get; set; }
@@ -39,6 +40,8 @@ namespace MowControl
 
         public bool UsingContactHomeSensor { get; set; }
 
-        public int MaxMowingWithoutCharge { get; set; }
+        public int MaxMowingHoursWithoutCharge { get; set; }
+
+        public int MaxRelativeHumidityPercent { get; set; }
     }
 }

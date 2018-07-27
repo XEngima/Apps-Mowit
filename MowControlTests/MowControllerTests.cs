@@ -18,7 +18,7 @@ namespace MowerTests
                 new TimeInterval(0, 0, 10, 0)
             };
 
-            var config = new MowPlannerConfig()
+            var config = new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
                 AverageWorkPerDayHours = 12,
@@ -51,7 +51,7 @@ namespace MowerTests
         public void CheckAndAct_PeriodNull_InvalidOperationException()
         {
             // Arrange
-            var config = new MowPlannerConfig()
+            var config = new MowControlConfig()
             {
                 TimeIntervals = null
             };

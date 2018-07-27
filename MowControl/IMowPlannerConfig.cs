@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MowControl
 {
-    public interface IMowPlannerConfig
+    public interface IMowControlConfig
     {
         /// <summary>
         /// Intervallen som ställts in på robotgräsklipparen.
@@ -37,6 +37,11 @@ namespace MowControl
         float MaxHourlyPrecipitaionMillimeter { get; }
 
         /// <summary>
+        /// Gets the maximum relative humidity in percent.
+        /// </summary>
+        int MaxRelativeHumidityPercent { get; }
+
+        /// <summary>
         /// Hämtar URL:en för att slå på strömmen.
         /// </summary>
         string PowerOnUrl { get; }
@@ -54,7 +59,10 @@ namespace MowControl
         /// </summary>
         bool UsingContactHomeSensor { get; }
 
-        // Gets the number of hours that the mower can be expected to be on the field without charging.
-        int MaxMowingWithoutCharge { get; }
+        /// <summary>
+        /// Gets the number of hours that the mower can be expected to be on the field without charging. If
+        /// it is away for a longer time than this it will be reported missing.
+        /// </summary>
+        int MaxMowingHoursWithoutCharge { get; }
     }
 }

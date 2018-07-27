@@ -11,13 +11,13 @@ namespace MowControl
     {
         private const int cIntervalOverSafeTimeMin = 55;
 
-        private IMowPlannerConfig _config;
+        private IMowControlConfig _config;
         private ISystemTime _systemTime;
         private IPowerSwitch _powerSwitch;
         private bool _wasHomeDuringLastInterval;
         bool _firstCheck;
 
-        public TimeBasedHomeSensor(IMowPlannerConfig config, IPowerSwitch powerSwitch, ISystemTime systemTime)
+        public TimeBasedHomeSensor(IMowControlConfig config, IPowerSwitch powerSwitch, ISystemTime systemTime)
         {
             _config = config;
             _systemTime = systemTime;

@@ -13,7 +13,7 @@ namespace MowControl
         private bool _mowerIsHome;
 
         public MowController(
-            IMowPlannerConfig config, 
+            IMowControlConfig config, 
             IPowerSwitch powerSwitch, 
             IWeatherForecast weatherForecast, 
             ISystemTime systemTime,
@@ -30,7 +30,7 @@ namespace MowControl
             _mowerIsHome = HomeSensor.IsHome;
         }
 
-        private IMowPlannerConfig Config { get; set; }
+        private IMowControlConfig Config { get; set; }
         private IPowerSwitch PowerSwitch { get; set; }
         private IWeatherForecast WeatherForecast { get; set; }
         private ISystemTime SystemTime { get; set; }
@@ -333,7 +333,7 @@ namespace MowControl
                         .OrderByDescending(x => x.Time)
                         .FirstOrDefault(x => x.Type == LogType.MowerLost || x.Type == LogType.MowerCame);
 
-                    if (lastMowerLeftLogItem?.Time.AddHours(Config.MaxMowingWithoutCharge) < SystemTime.Now && lastLogItem?.Type != LogType.MowerLost)
+                    if (lastMowerLeftLogItem?.Time.AddHours(Config.MaxMowingHoursWithoutCharge) < SystemTime.Now && lastLogItem?.Type != LogType.MowerLost)
                     {
                         Logger.Write(SystemTime.Now, LogType.MowerLost, "Mower seems to be lost. It did not return home as expected.");
                     }
@@ -391,7 +391,7 @@ namespace MowControl
                         // If a contact home sensor is used, weather can be checked for much smaller time spans
                         if (Config.UsingContactHomeSensor)
                         {
-                            forecastHours = Config.MaxMowingWithoutCharge + 1;
+                            forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
                         }
 
                         if (minutesLeftToIntervalStart <= 5 || !betweenIntervals && HomeSensor.IsHome && (SystemTime.Now - MowerCameTime).TotalMinutes >= 30)
