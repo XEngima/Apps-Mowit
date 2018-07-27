@@ -5,9 +5,7 @@ VisualStudioVersion = 15.0.27703.2035
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mowit", "Mowit\Mowit.csproj", "{B7F1A101-B456-489B-A9E2-2F514472885B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MowControl", "MowControl\MowControl.csproj", "{7E6D7405-ED24-4B3D-9B4E-C92CDF740BD3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MowControlTests", "MowControlTests\MowControlTests.csproj", "{76EC63A0-E267-4597-9CA7-DD26DC66C02D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MowControl", "MowControl\MowControl.csproj", "{7E6D7405-ED24-4B3D-9B4E-C92CDF740BD3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +21,6 @@ Global
 		{7E6D7405-ED24-4B3D-9B4E-C92CDF740BD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E6D7405-ED24-4B3D-9B4E-C92CDF740BD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E6D7405-ED24-4B3D-9B4E-C92CDF740BD3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{76EC63A0-E267-4597-9CA7-DD26DC66C02D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{76EC63A0-E267-4597-9CA7-DD26DC66C02D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{76EC63A0-E267-4597-9CA7-DD26DC66C02D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{76EC63A0-E267-4597-9CA7-DD26DC66C02D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

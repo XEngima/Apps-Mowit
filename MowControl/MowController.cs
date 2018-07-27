@@ -140,6 +140,11 @@ namespace MowControl
 
         private async Task Run()
         {
+            if (Config.UsingContactHomeSensor && HomeSensor is TimeBasedHomeSensor)
+            {
+                throw new InvalidOperationException("The time based home sensor cannot act as a contact home sensor. If the time based home sensor is used, please set option UseContactHomeSensor to false.");
+            }
+
             Logger.Write(SystemTime.Now, LogType.MowControllerStarted, "Mow Controller started.");
             _mowerIsHome = HomeSensor.IsHome;
 
@@ -187,7 +192,7 @@ namespace MowControl
                 {
                     DateTime intervalStartTime = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, interval.StartHour, interval.StartMin, 0);
 
-                    if (intervalStartTime <= now)
+                    if (intervalStartTime < now)
                     {
                         // Hämta senaste loggmeddelandet
                         var lastLogItem = Logger.LogItems
@@ -376,7 +381,7 @@ namespace MowControl
 
                 if (PowerSwitch.IsOn)
                 {
-                    if ((!betweenIntervals || beforeIntervalStart) && !NextInterval.ContainsTime(SystemTime.Now) && HomeSensor.IsHome)
+                    if (HomeSensor.IsHome)
                     {
                         DateTime nextIntervalExactStartTime = new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, NextInterval.StartHour, NextInterval.StartMin, 0);
                         if (nextIntervalExactStartTime < SystemTime.Now)

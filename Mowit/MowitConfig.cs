@@ -17,6 +17,10 @@ namespace Mowit
         {
             var mowControlConfig = new MowControlConfig()
             {
+                TimeIntervals =
+                {
+                    new TimeInterval(7, 0, 23, 0),
+                },
                 PowerOnUrl = "http://example.com/on",
                 PowerOffUrl = "http://example.com/off",
             };
