@@ -24,6 +24,6 @@ namespace MowControl
         /// <summary>
         /// Hämtar huruvida strömmen till robotgräsklipparen är påslagen eller inte.
         /// </summary>
-        bool IsOn { get; }
+        PowerStatus Status { get; }
     }
 }

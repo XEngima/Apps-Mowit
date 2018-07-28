@@ -92,7 +92,7 @@ namespace MowerTests
             mowController.CheckAndAct();
 
             // Assert
-            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
             Assert.IsTrue(powerSwitch.HasBeenTurnedOnOnce);
 
             var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOn).ToList();
@@ -120,7 +120,7 @@ namespace MowerTests
             mowController.CheckAndAct();
 
             // Assert
-            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
         }
 
         private static void RunOverTime(MowController mowController, TestSystemTime systemTime, int hours, int minutes)
@@ -150,7 +150,7 @@ namespace MowerTests
             RunOverTime(mowController, systemTime, 0, 10);
 
             // Assert
-            Assert.IsFalse(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.Off);
             Assert.IsTrue(powerSwitch.HasBeenTurnedOffOnce);
 
             var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOff).ToList();
@@ -178,7 +178,7 @@ namespace MowerTests
             RunOverTime(mowController, systemTime, 0, 10);
 
             // Assert
-            Assert.IsFalse(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.Off);
             Assert.IsTrue(powerSwitch.HasBeenTurnedOffOnce);
 
             var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOff).ToList();
@@ -206,7 +206,7 @@ namespace MowerTests
             RunOverTime(mowController, systemTime, 24, 0);
 
             // Assert
-            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
             Assert.AreEqual(1, powerSwitch.TurnOns);
             Assert.AreEqual(0, powerSwitch.TurnOffs);
         }
@@ -229,7 +229,7 @@ namespace MowerTests
             RunOverTime(mowController, systemTime, 12, 0);
 
             // Assert
-            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
             Assert.AreEqual(2, powerSwitch.TurnOns);
             Assert.AreEqual(1, powerSwitch.TurnOffs);
 
@@ -260,7 +260,7 @@ namespace MowerTests
             RunOverTime(mowController, systemTime, 12, 0);
 
             // Assert
-            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
             Assert.AreEqual(2, powerSwitch.TurnOns);
             Assert.AreEqual(1, powerSwitch.TurnOffs);
 
@@ -291,7 +291,7 @@ namespace MowerTests
             RunOverTime(mowController, systemTime, 12, 0);
 
             // Assert
-            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
             Assert.AreEqual(1, powerSwitch.TurnOns);
             Assert.AreEqual(1, powerSwitch.TurnOffs);
 
@@ -327,7 +327,7 @@ namespace MowerTests
             RunOverTime(mowController, systemTime, 12, 0);
 
             // Assert
-            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
             Assert.AreEqual(1, powerSwitch.TurnOns);
             Assert.AreEqual(1, powerSwitch.TurnOffs);
 
@@ -365,7 +365,7 @@ namespace MowerTests
             mowController.CheckAndAct();
 
             // Assert
-            Assert.IsFalse(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.Off);
             Assert.AreEqual(0, powerSwitch.TurnOns);
             Assert.AreEqual(1, powerSwitch.TurnOffs);
 
@@ -401,7 +401,7 @@ namespace MowerTests
             mowController.CheckAndAct();
 
             // Assert
-            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
             Assert.AreEqual(0, powerSwitch.TurnOns);
             Assert.AreEqual(0, powerSwitch.TurnOffs);
         }
@@ -424,7 +424,7 @@ namespace MowerTests
             RunOverTime(mowController, systemTime, 72, 0); // 3 dagar
 
             // Assert
-            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
             Assert.AreEqual(2, powerSwitch.TurnOns);
             Assert.AreEqual(1, powerSwitch.TurnOffs);
 
@@ -461,7 +461,7 @@ namespace MowerTests
             // Assert
             var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOn || x.Type == LogType.PowerOff).ToList();
 
-            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
             Assert.AreEqual(5, powerSwitch.TurnOns);
             Assert.AreEqual(4, powerSwitch.TurnOffs);
             Assert.AreEqual(9, logItems.Count);
@@ -488,7 +488,7 @@ namespace MowerTests
             mowController.CheckAndAct();
 
             // Assert
-            Assert.IsFalse(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.Off);
             Assert.AreEqual(0, powerSwitch.TurnOns);
             Assert.AreEqual(0, powerSwitch.TurnOffs);
 
@@ -521,7 +521,7 @@ namespace MowerTests
             mowController.CheckAndAct();
 
             // Assert
-            Assert.IsFalse(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.Off);
             Assert.AreEqual(0, powerSwitch.TurnOns);
             Assert.AreEqual(0, powerSwitch.TurnOffs);
 
@@ -554,7 +554,7 @@ namespace MowerTests
             mowController.CheckAndAct();
 
             // Assert
-            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
             Assert.AreEqual(0, powerSwitch.TurnOns);
             Assert.AreEqual(0, powerSwitch.TurnOffs);
 
@@ -661,7 +661,7 @@ namespace MowerTests
             mowController.CheckAndAct();
 
             // Assert
-            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
             Assert.IsFalse(powerSwitch.HasBeenTurnedOffOnce);
             Assert.IsTrue(powerSwitch.HasBeenTurnedOnOnce);
 
@@ -691,7 +691,7 @@ namespace MowerTests
             // Assert
             var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOff || x.Type == LogType.PowerOn).ToList();
 
-            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
             Assert.AreEqual(2, logItems.Count);
 
             Assert.AreEqual(LogType.PowerOff, logItems[0].Type);
@@ -728,7 +728,7 @@ namespace MowerTests
             // Assert
             var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOff || x.Type == LogType.PowerOn).ToList();
 
-            Assert.IsTrue(powerSwitch.IsOn);
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
             Assert.AreEqual(2, logItems.Count);
 
             Assert.AreEqual(LogType.PowerOff, logItems[0].Type);
@@ -738,5 +738,56 @@ namespace MowerTests
             Assert.AreEqual("2018-07-24 23:05", logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
         }
 
+        [TestMethod]
+        public void CheckAndAct_PowerStatusUnknownGoodWeatherAhead_LogMessageWritten()
+        {
+            // Arrange
+            var config = TestFactory.NewConfig3To10And16To2300(usingContactHomeSensor: true, maxMowingWithoutCharge: 2);
+            var systemTime = new TestSystemTime(2018, 7, 24, 6, 0);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.Unknown);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            var homeSensor = new TestHomeSensor(isHome: true);
+            var logger = TestFactory.NewMowLogger(systemTime.Now);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOn || x.Type == LogType.PowerOff).ToList();
+
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
+            Assert.AreEqual(1, logItems.Count);
+
+            Assert.AreEqual(LogType.PowerOn, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 06:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+        }
+
+        [TestMethod]
+        public void CheckAndAct_PowerStatusUnknownBadWeatherAhead_LogMessageWritten()
+        {
+            // Arrange
+            var config = TestFactory.NewConfig3To10And16To2300(
+                usingContactHomeSensor: true, 
+                maxMowingWithoutCharge: 2);
+            var systemTime = new TestSystemTime(2018, 7, 24, 6, 0);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.Unknown);
+            var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
+            var homeSensor = new TestHomeSensor(isHome: true);
+            var logger = TestFactory.NewMowLogger(systemTime.Now);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOn || x.Type == LogType.PowerOff).ToList();
+
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.Off);
+            Assert.AreEqual(1, logItems.Count);
+
+            Assert.AreEqual(LogType.PowerOff, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 06:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+        }
     }
 }

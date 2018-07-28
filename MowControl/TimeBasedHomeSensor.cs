@@ -72,7 +72,7 @@ namespace MowControl
                     }
                 }
 
-                if (!_powerSwitch.IsOn)
+                if (_powerSwitch.Status == PowerStatus.Off)
                 {
                     isHome = true;
                 }

@@ -30,16 +30,11 @@ namespace MowControl
                                                     .OrderBy(ts => ts.validTime))
             {
                 // Kolla om det kommer att regna för mycket
-                if (timeSerie.PrecipitationMax > (decimal)MaxHourlyPrecipitaionMillimeter)
-                {
-                    weatherAheadDescription = "Expecting rain as a maximum of " + timeSerie.PrecipitationMax + " mm/h at " + timeSerie.ValidTimeLocal.ToShortTimeString() + ".";
-                    return false;
-                }
+                decimal precipitation = Math.Max(timeSerie.PrecipitationMax, timeSerie.PrecipitationMin);
 
-                // Kolla om det kommer att bli för hög luftfuktighet
-                if (timeSerie.RelativeHumidity > MaxRelativeHumidityPercent)
+                if (precipitation > (decimal)MaxHourlyPrecipitaionMillimeter)
                 {
-                    weatherAheadDescription = "Expecting a relative humidity of " + timeSerie.RelativeHumidity + "% at " + timeSerie.ValidTimeLocal.ToShortTimeString() + ".";
+                    weatherAheadDescription = "Expecting rain as a maximum of " + precipitation.ToString("0.0") + " mm/h at " + timeSerie.ValidTimeLocal.ToShortTimeString() + ".";
                     return false;
                 }
 
@@ -47,6 +42,13 @@ namespace MowControl
                 if (timeSerie.ThunderProbability > MaxHourlyThunderPercent)
                 {
                     weatherAheadDescription = "Thunder warning of " + timeSerie.ThunderProbability + "% at " + timeSerie.ValidTimeLocal.ToShortTimeString() + ".";
+                    return false;
+                }
+
+                // Kolla om det kommer att bli för hög luftfuktighet
+                if (timeSerie.RelativeHumidity > MaxRelativeHumidityPercent)
+                {
+                    weatherAheadDescription = "Expecting a relative humidity of " + timeSerie.RelativeHumidity + "% at " + timeSerie.ValidTimeLocal.ToShortTimeString() + ".";
                     return false;
                 }
 

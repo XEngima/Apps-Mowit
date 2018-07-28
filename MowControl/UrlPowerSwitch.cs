@@ -15,10 +15,10 @@ namespace MowControl
         {
             _onUrl = onUrl;
             _offUrl = offUrl;
-            IsOn = false;
+            Status = PowerStatus.Unknown;
         }
 
-        public bool IsOn { get; private set; }
+        public PowerStatus Status { get; private set; }
 
         public event PowerChangedEventHandler PowerSwitchChanged;
 
@@ -28,7 +28,7 @@ namespace MowControl
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Stream resStream = response.GetResponseStream();
 
-            IsOn = false;
+            Status = PowerStatus.Off;
         }
 
         public void TurnOn()
@@ -37,7 +37,7 @@ namespace MowControl
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Stream resStream = response.GetResponseStream();
 
-            IsOn = true;
+            Status = PowerStatus.On;
         }
     }
 }

@@ -346,7 +346,7 @@ namespace MowControl
 
                 // If power is turned off
 
-                if (!PowerSwitch.IsOn)
+                if (PowerSwitch.Status != PowerStatus.On)
                 {
                     foreach (var interval in Config.TimeIntervals)
                     {
@@ -379,9 +379,9 @@ namespace MowControl
 
                 // If power is turned on
 
-                if (PowerSwitch.IsOn)
+                if (PowerSwitch.Status != PowerStatus.Off)
                 {
-                    if (HomeSensor.IsHome)
+                    if (HomeSensor.IsHome) // TODO: Fel här när kraften är Unknown...
                     {
                         DateTime nextIntervalExactStartTime = new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, NextInterval.StartHour, NextInterval.StartMin, 0);
                         if (nextIntervalExactStartTime < SystemTime.Now)
@@ -399,7 +399,7 @@ namespace MowControl
                             forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
                         }
 
-                        if (minutesLeftToIntervalStart <= 5 || !betweenIntervals && HomeSensor.IsHome && (SystemTime.Now - MowerCameTime).TotalMinutes >= 30)
+                        if (minutesLeftToIntervalStart <= 5 || !betweenIntervals && HomeSensor.IsHome && (SystemTime.Now - MowerCameTime).TotalMinutes >= 30 || PowerSwitch.Status == PowerStatus.Unknown)
                         {
                             string weatherAheadDescription;
 

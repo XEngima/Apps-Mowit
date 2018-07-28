@@ -16,10 +16,16 @@ namespace MowerTests
         public TestPowerSwitch(bool isActive)
             :this()
         {
-            IsOn = isActive;
+            Status = isActive ? PowerStatus.On : PowerStatus.Off;
         }
 
-        public bool IsOn { get; set; }
+        public TestPowerSwitch(PowerStatus status)
+            : this()
+        {
+            Status = status;
+        }
+
+        public PowerStatus Status { get; set; }
 
         public bool HasBeenTurnedOnOnce
         {
@@ -45,12 +51,12 @@ namespace MowerTests
         public void TurnOff()
         {
             TurnOffs++;
-            IsOn = false;
+            Status = PowerStatus.Off;
         }
 
         public void TurnOn()
         {
-            IsOn = true;
+            Status = PowerStatus.On;
             TurnOns++;
         }
     }
