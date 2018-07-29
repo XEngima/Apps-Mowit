@@ -9,7 +9,7 @@ namespace MowControl
     /// </summary>
     public class TimeBasedHomeSensor : IHomeSensor
     {
-        private const int cIntervalOverSafeTimeMin = 55;
+        private const int cIntervalOverSafeTimeMin = 50;
 
         private IMowControlConfig _config;
         private ISystemTime _systemTime;
