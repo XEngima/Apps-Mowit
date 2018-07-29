@@ -25,8 +25,9 @@ namespace MowerTests
             };
             var systemTime = new TestSystemTime(new DateTime(2018, 6, 22, 5, 55, 0));
             var powerSwitch = new TestPowerSwitch(true);
+            var systemStartTime = systemTime.Now.AddDays(-1);
 
-            var homeSensor = new TimeBasedHomeSensor(config, powerSwitch, systemTime);
+            var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
 
             // Act
 
@@ -50,8 +51,9 @@ namespace MowerTests
             };
             var systemTime = new TestSystemTime(new DateTime(2018, 6, 22, 00, 15, 0));
             var powerSwitch = new TestPowerSwitch(true);
+            var systemStartTime = systemTime.Now.AddDays(-1);
 
-            var homeSensor = new TimeBasedHomeSensor(config, powerSwitch, systemTime);
+            var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
 
             // Act
 
@@ -75,8 +77,9 @@ namespace MowerTests
             };
             var systemTime = new TestSystemTime(new DateTime(2018, 6, 22, 1, 00, 0));
             var powerSwitch = new TestPowerSwitch(true);
+            var systemStartTime = systemTime.Now.AddDays(-1);
 
-            var homeSensor = new TimeBasedHomeSensor(config, powerSwitch, systemTime);
+            var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
 
             // Act
 
@@ -100,8 +103,8 @@ namespace MowerTests
             };
             var systemTime = new TestSystemTime(new DateTime(2018, 6, 22, 11, 10, 0));
             var powerSwitch = new TestPowerSwitch(true);
-
-            var homeSensor = new TimeBasedHomeSensor(config, powerSwitch, systemTime);
+            var systemStartTime = systemTime.Now.AddDays(-1);
+            var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
 
             // Act
 
@@ -125,11 +128,11 @@ namespace MowerTests
             };
             var systemTime = new TestSystemTime(new DateTime(2018, 6, 22, 12, 15, 0));
             var powerSwitch = new TestPowerSwitch(true);
-
-            var homeSensor = new TimeBasedHomeSensor(config, powerSwitch, systemTime);
+            var systemStartTime = systemTime.Now.AddDays(-1);
+            var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
 
             // Act
-            bool isHome = homeSensor.IsHome;
+            bool isHome = homeSensor.IsHome; // First is always true
 
             // Assert
             Assert.IsFalse(isHome);
@@ -152,8 +155,8 @@ namespace MowerTests
 
             var systemTime = new TestSystemTime(new DateTime(2018, 6, 22, 11, 59, 0));
             var powerSwitch = new TestPowerSwitch(false);
-
-            var homeSensor = new TimeBasedHomeSensor(config, powerSwitch, systemTime);
+            var systemStartTime = systemTime.Now.AddDays(-1);
+            var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
 
             var isHome = homeSensor.IsHome;
             systemTime.TickMinutes(2);
@@ -161,6 +164,34 @@ namespace MowerTests
 
             // Act
             isHome = homeSensor.IsHome;
+
+            // Assert
+            Assert.IsTrue(isHome);
+        }
+
+        [TestMethod]
+        public void IsHome_FirstCheck_IsHome()
+        {
+            // Arrange
+            var timeIntervals = new List<TimeInterval>();
+            timeIntervals.Add(new TimeInterval(6, 0, 12, 0));
+
+            var config = new MowControlConfig()
+            {
+                TimeIntervals = timeIntervals,
+                AverageWorkPerDayHours = 12,
+                MaxHourlyThunderPercent = 0,
+                MaxHourlyPrecipitaionMillimeter = 0
+            };
+
+            var systemTime = new TestSystemTime(new DateTime(2018, 6, 22, 6, 30, 0));
+            var powerSwitch = new TestPowerSwitch(true);
+            var systemStartTime = systemTime.Now;
+
+            var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
+
+            // Act
+            bool isHome = homeSensor.IsHome;
 
             // Assert
             Assert.IsTrue(isHome);

@@ -16,14 +16,24 @@ namespace MowControl
         private IPowerSwitch _powerSwitch;
         private bool _wasHomeDuringLastInterval;
         bool _firstCheck;
+        DateTime _startTime;
 
-        public TimeBasedHomeSensor(IMowControlConfig config, IPowerSwitch powerSwitch, ISystemTime systemTime)
+        public TimeBasedHomeSensor(DateTime startTime, IMowControlConfig config, IPowerSwitch powerSwitch, ISystemTime systemTime)
         {
+            _startTime = startTime;
             _config = config;
             _systemTime = systemTime;
             _powerSwitch = powerSwitch;
             _wasHomeDuringLastInterval = true;
             _firstCheck = true;
+        }
+
+        private bool InFirstMinute
+        {
+            get
+            {
+                return _systemTime.Now.ToString("yyyy-MM-dd HH:mm") == _startTime.ToString("yyyy-MM-dd HH:mm");
+            }
         }
 
         /// <summary>
@@ -33,6 +43,12 @@ namespace MowControl
             get
             {
                 if (_config.TimeIntervals?.Count == 0)
+                {
+                    return true;
+                }
+
+                // If during first minute since startup, always return true
+                if (InFirstMinute)
                 {
                     return true;
                 }
@@ -84,7 +100,12 @@ namespace MowControl
 
                 if (!_firstCheck && !inAnyInterval && _wasHomeDuringLastInterval)
                 {
-                    return true;
+                    isHome = true;
+                }
+
+                if (_firstCheck)
+                {
+                    //isHome = true;
                 }
 
                 _firstCheck = false;
