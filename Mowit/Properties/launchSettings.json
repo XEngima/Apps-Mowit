@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Mowit": {
+      "commandName": "Project",
+      "commandLineArgs": "/simulatedhomesensor"
+    }
+  }
+}

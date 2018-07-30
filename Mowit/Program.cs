@@ -17,14 +17,23 @@ namespace Mowit
         {
             string path = Directory.GetCurrentDirectory();
             var serializer = new XmlSerializer(typeof(MowitConfig));
+            bool simulatedHomeSensor = false;
 
-            if (args.Length >= 1 && args[0].Contains("/configexample"))
+            foreach (string arg in args)
             {
-                TextWriter textWriter = new StreamWriter(Path.Combine(path, "MowitSettings.xml.example"));
-                serializer.Serialize(textWriter, MowitConfig.GetExampleConfig());
-                textWriter.Flush();
+                if (arg == "/configexample")
+                {
+                    TextWriter textWriter = new StreamWriter(Path.Combine(path, "MowitSettings.xml.example"));
+                    serializer.Serialize(textWriter, MowitConfig.GetExampleConfig());
+                    textWriter.Flush();
 
-                return;
+                    return;
+                }
+
+                if (arg == "/simulatedcontacthomesensor")
+                {
+                    simulatedHomeSensor = true;
+                }
             }
 
             TextReader textReader = new StreamReader(Path.Combine(path, "MowitSettings.xml"));
@@ -37,7 +46,16 @@ namespace Mowit
 
             var systemTime = new SystemTime();
             var powerSwitch = new UrlPowerSwitch(Config.MowControlConfig.PowerOnUrl, Config.MowControlConfig.PowerOffUrl);
-            var homeSensor = new TimeBasedHomeSensor(systemTime.Now, Config.MowControlConfig, powerSwitch, systemTime);
+            IHomeSensor homeSensor;
+
+            if (simulatedHomeSensor)
+            {
+                homeSensor = new SimulatedContactHomeSensor(systemTime, Config.MowControlConfig.TimeIntervals.ToArray(), powerSwitch);
+            }
+            else
+            {
+                homeSensor = new TimeBasedHomeSensor(systemTime.Now, Config.MowControlConfig, powerSwitch, systemTime);
+            }
 
             Smhi smhi = new Smhi(Config.MowControlConfig.CoordLat, Config.MowControlConfig.CoordLon, new TimeSpan(1, 0, 0));
             var weatherForecast = new WeatherForecast(smhi, Config.MowControlConfig.MaxHourlyThunderPercent, Config.MowControlConfig.MaxHourlyPrecipitaionMillimeter, Config.MowControlConfig.MaxRelativeHumidityPercent);
