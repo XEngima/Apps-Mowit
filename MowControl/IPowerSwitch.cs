@@ -7,7 +7,7 @@ namespace MowControl
     /// <summary>
     /// Klass som hanterar på- och avslagning av stömmen till gräsklipparen.
     /// </summary>
-    public interface IPowerSwitch
+    public interface IPowerSwitch : IPowerSwitchConsumer
     {
         event PowerChangedEventHandler PowerSwitchChanged;
 

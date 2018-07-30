@@ -11,9 +11,9 @@ namespace MowControl
         private const decimal _cTimeFactor = 1m;
         private TimeInterval[] _timeIntervals;
         private SystemTime _systemTime;
-        private IPowerSwitch _powerSwitch;
+        private IPowerSwitchConsumer _powerSwitch;
 
-        public SimulatedContactHomeSensor(SystemTime systemTime, TimeInterval[] timeIntervals, IPowerSwitch powerSwitch)
+        public SimulatedContactHomeSensor(SystemTime systemTime, TimeInterval[] timeIntervals, IPowerSwitchConsumer powerSwitch)
         {
             IsHome = true;
 

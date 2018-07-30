@@ -13,12 +13,12 @@ namespace MowControl
 
         private IMowControlConfig _config;
         private ISystemTime _systemTime;
-        private IPowerSwitch _powerSwitch;
+        private IPowerSwitchConsumer _powerSwitch;
         private bool _wasHomeDuringLastInterval;
         bool _firstCheck;
         DateTime _startTime;
 
-        public TimeBasedHomeSensor(DateTime startTime, IMowControlConfig config, IPowerSwitch powerSwitch, ISystemTime systemTime)
+        public TimeBasedHomeSensor(DateTime startTime, IMowControlConfig config, IPowerSwitchConsumer powerSwitch, ISystemTime systemTime)
         {
             _startTime = startTime;
             _config = config;
