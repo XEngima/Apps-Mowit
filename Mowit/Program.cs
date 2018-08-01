@@ -66,6 +66,7 @@ namespace Mowit
 
             var mowController = new MowController(Config.MowControlConfig, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
             var task = mowController.StartAsync();
+            task.Wait();
         }
 
         private static void Logger_LogItemWritten(object sender, EventArgs e)

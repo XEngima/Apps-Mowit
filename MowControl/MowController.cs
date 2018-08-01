@@ -135,10 +135,11 @@ namespace MowControl
 
         public async Task StartAsync()
         {
-            await Run();
+            await Task.Yield();
+            Run();
         }
 
-        private async Task Run()
+        private void Run()
         {
             if (Config.UsingContactHomeSensor && HomeSensor is TimeBasedHomeSensor)
             {
