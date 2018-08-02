@@ -13,5 +13,6 @@ namespace MowControl
         MowerCame = 5,
         MowerLeft = 6,
         MowerLost = 7,
+        MowerStuckInHome = 8,
     }
 }

@@ -61,8 +61,15 @@ namespace MowControl
 
         /// <summary>
         /// Gets the number of hours that the mower can be expected to be on the field without charging. If
-        /// it is away for a longer time than this it will be reported missing.
+        /// it is away for a longer time than this it will be reported missing. Only applies if using a
+        /// contact home sensor.
         /// </summary>
         int MaxMowingHoursWithoutCharge { get; }
+
+        /// <summary>
+        /// Gets the maximum number of hours that the mower can be expected to charge during an interval. Only
+        /// applies if using a contact home sensor.
+        /// </summary>
+        int MaxChargingHours { get; }
     }
 }
