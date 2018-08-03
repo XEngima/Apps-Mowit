@@ -313,7 +313,7 @@ namespace MowControl
 
             try
             {
-                // Check of mower has entered or exited its home since last time
+                // Check if mower has entered or exited its home since last time
                 if (_mowerIsHome != HomeSensor.IsHome)
                 {
                     _mowerIsHome = HomeSensor.IsHome;

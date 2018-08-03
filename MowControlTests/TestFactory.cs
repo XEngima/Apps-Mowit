@@ -67,7 +67,10 @@ namespace MowerTests
             };
         }
 
-        public static IMowControlConfig NewConfig3To10And16To2300(bool usingContactHomeSensor = false, int maxMowingWithoutCharge = 2)
+        public static IMowControlConfig NewConfig3To10And16To2300(
+            bool usingContactHomeSensor = false, 
+            int maxMowingWithoutCharge = 2,
+            int maxChargingHours = 2)
         {
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(3, 0, 10, 0));
@@ -81,6 +84,7 @@ namespace MowerTests
                 MaxHourlyPrecipitaionMillimeter = 0,
                 UsingContactHomeSensor = usingContactHomeSensor,
                 MaxMowingHoursWithoutCharge = maxMowingWithoutCharge,
+                MaxChargingHours = maxChargingHours,
             };
         }
 

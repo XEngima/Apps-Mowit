@@ -19,6 +19,7 @@ namespace MowControl
             CoordLon = 0;
             UsingContactHomeSensor = false;
             MaxMowingHoursWithoutCharge = 2;
+            MaxChargingHours = 2;
             MaxRelativeHumidityPercent = 100;
         }
 
@@ -41,6 +42,8 @@ namespace MowControl
         public bool UsingContactHomeSensor { get; set; }
 
         public int MaxMowingHoursWithoutCharge { get; set; }
+
+        public int MaxChargingHours { get; set; }
 
         public int MaxRelativeHumidityPercent { get; set; }
     }
