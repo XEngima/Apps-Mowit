@@ -827,5 +827,32 @@ namespace MowerTests
             Assert.AreEqual(LogType.PowerOff, logItems[0].Type);
             Assert.AreEqual("2018-07-24 06:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
         }
+
+        [TestMethod]
+        public void CheckAndAct_PowerStatusUnknownBadWeatherAheadBetweenIntervals_LogMessageWritten()
+        {
+            // Arrange
+            var config = TestFactory.NewConfig3To10And16To2300(
+                usingContactHomeSensor: true,
+                maxMowingWithoutCharge: 2);
+            var systemTime = new TestSystemTime(2018, 7, 24, 11, 30);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.Unknown);
+            var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
+            var homeSensor = new TestHomeSensor(isHome: true);
+            var logger = TestFactory.NewMowLogger(systemTime.Now);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOn || x.Type == LogType.PowerOff).ToList();
+
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
+            Assert.AreEqual(1, logItems.Count);
+
+            Assert.AreEqual(LogType.PowerOn, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 11:30", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+        }
     }
 }

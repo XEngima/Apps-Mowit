@@ -149,10 +149,17 @@ namespace MowControl
             Logger.Write(SystemTime.Now, LogType.MowControllerStarted, "Mow Controller started.");
             _mowerIsHome = HomeSensor.IsHome;
 
-            while (true)
+            try
             {
-                CheckAndAct();
-                Thread.Sleep(60000);
+                while (true)
+                {
+                    CheckAndAct();
+                    Thread.Sleep(60000);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Write(SystemTime.Now, LogType.Failure, ex.ToString());
             }
         }
 
