@@ -348,7 +348,7 @@ namespace MowerTests
             Assert.IsTrue(logItems[0].Message.StartsWith("Power was turned off."));
 
             Assert.AreEqual(LogType.PowerOn, logItems[1].Type);
-            expectedLogDate = "2018-07-25 06:00";
+            expectedLogDate = "2018-07-25 00:04";
             Assert.AreEqual(expectedLogDate, logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
             Assert.IsTrue(logItems[1].Message.StartsWith("Power was turned on."));
         }
@@ -835,7 +835,7 @@ namespace MowerTests
             var config = TestFactory.NewConfig3To10And16To2300(
                 usingContactHomeSensor: true,
                 maxMowingWithoutCharge: 2);
-            var systemTime = new TestSystemTime(2018, 7, 24, 11, 30);
+            var systemTime = new TestSystemTime(2018, 7, 24, 2, 30);
             var powerSwitch = new TestPowerSwitch(PowerStatus.Unknown);
             var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
             var homeSensor = new TestHomeSensor(isHome: true);
@@ -852,7 +852,7 @@ namespace MowerTests
             Assert.AreEqual(1, logItems.Count);
 
             Assert.AreEqual(LogType.PowerOn, logItems[0].Type);
-            Assert.AreEqual("2018-07-24 11:30", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+            Assert.AreEqual("2018-07-24 02:30", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
         }
     }
 }

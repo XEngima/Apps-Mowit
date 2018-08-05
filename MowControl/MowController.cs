@@ -287,10 +287,10 @@ namespace MowControl
         /// </summary>
         public void CheckAndAct()
         {
-            //if (SystemTime.Now.ToString("HH:mm") == "20:30")
-            //{
-            //    int debug = 0;
-            //}
+            if (SystemTime.Now.ToString("HH:mm") == "00:04")
+            {
+                int debug = 0;
+            }
 
             if (Config.TimeIntervals == null)
             {
@@ -315,6 +315,12 @@ namespace MowControl
                 beforeIntervalStart = SystemTime.Now >= NextIntervalStartTime.AddMinutes(-5);
 
                 DateTime minutesFromEnd = (new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, PrevInterval.EndHour, PrevInterval.EndMin, 0).AddMinutes(5));
+
+                if (PrevInterval.StartHour > SystemTime.Now.Hour || PrevInterval.StartHour == SystemTime.Now.Hour && PrevInterval.StartMin > SystemTime.Now.Minute)
+                {
+                    minutesFromEnd = minutesFromEnd.AddDays(-1);
+                }
+
                 safelyAfterIntervalEnd = SystemTime.Now >= minutesFromEnd;
             }
 
