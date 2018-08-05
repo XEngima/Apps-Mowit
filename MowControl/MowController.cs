@@ -12,6 +12,8 @@ namespace MowControl
     {
         private bool _mowerIsHome;
 
+        public static string Version { get { return "1.0"; } }
+
         public MowController(
             IMowControlConfig config, 
             IPowerSwitch powerSwitch, 
@@ -146,7 +148,7 @@ namespace MowControl
                 throw new InvalidOperationException("The time based home sensor cannot act as a contact home sensor. If the time based home sensor is used, please set option UseContactHomeSensor to false.");
             }
 
-            Logger.Write(SystemTime.Now, LogType.MowControllerStarted, "Mow Controller started.");
+            Logger.Write(SystemTime.Now, LogType.MowControllerStarted, $"Mow Controller {Version} started.");
             _mowerIsHome = HomeSensor.IsHome;
 
             try
