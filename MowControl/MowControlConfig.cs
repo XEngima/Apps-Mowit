@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MowControl
 {
-    public class MowControlConfig : IMowControlConfig
+    public sealed class MowControlConfig : IMowControlConfig
     {
         public MowControlConfig()
         {
