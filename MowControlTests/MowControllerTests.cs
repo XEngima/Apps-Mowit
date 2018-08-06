@@ -9,6 +9,17 @@ namespace MowerTests
     [TestClass]
     public class MowControllerTests
     {
+        private static void RunOverTime(MowController mowController, TestSystemTime systemTime, int hours, int minutes)
+        {
+            minutes = hours * 60 + minutes;
+
+            for (int i = 0; i < minutes; i++)
+            {
+                mowController.CheckAndAct();
+                systemTime.TickMinutes(1);
+            }
+        }
+
         [TestMethod]
         public void CheckAndAct_ConfigOk_NoException()
         {
@@ -80,9 +91,9 @@ namespace MowerTests
         public void CheckAndAct_GoodWeatherAndCloseToStartMowing_CurrentIsTurnedOn()
         {
             // Arrange
+            var systemTime = new TestSystemTime(2018, 7, 24, 6, 0);
             var config = TestFactory.NewConfig6To12();
             var powerSwitch = new TestPowerSwitch();
-            var systemTime = new TestSystemTime(2018, 7, 24, 6, 0);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var homeSensor = new TestHomeSensor(true);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
@@ -124,24 +135,13 @@ namespace MowerTests
             Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
         }
 
-        private static void RunOverTime(MowController mowController, TestSystemTime systemTime, int hours, int minutes)
-        {
-            minutes = hours * 60 + minutes;
-
-            for (int i = 0; i < minutes; i++)
-            {
-                mowController.CheckAndAct();
-                systemTime.TickMinutes(1);
-            }
-        }
-
         [TestMethod]
         public void CheckAndAct_AfterWorkingIntervalAndComingHomeRightBeforeNextBadWeatherInterval_CurrentTurnedOffOnce()
         {
             // Arrange
+            var systemTime = new TestSystemTime(2018, 7, 24, 12, 50);
             var config = TestFactory.NewConfig6To12And13To19();
             var powerSwitch = new TestPowerSwitch(isActive: true);
-            var systemTime = new TestSystemTime(2018, 7, 24, 12, 50);
             var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
@@ -219,9 +219,9 @@ namespace MowerTests
         public void CheckAndAct_Running24HoursInGoodWeatherGettingBad_CurrentTurnedOffOnce()
         {
             // Arrange
+            var systemTime = new TestSystemTime(2018, 7, 24, 11, 0);
             var config = TestFactory.NewConfig0To6And12To18();
             var powerSwitch = new TestPowerSwitch(isActive: false);
-            var systemTime = new TestSystemTime(2018, 7, 24, 11, 0);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
@@ -245,15 +245,24 @@ namespace MowerTests
             string expectedLogDate = "2018-07-24 23:55";
             Assert.AreEqual(expectedLogDate, logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
             Assert.IsTrue(logItems[1].Message.StartsWith("Power was turned off."));
+
+            logItems = logger.LogItems.Where(x => x.Type == LogType.MowIntervalStarted || x.Type == LogType.MowIntervalEnded).ToList();
+            Assert.AreEqual(2, logItems.Count);
+
+            Assert.AreEqual(LogType.MowIntervalStarted, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 12:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+
+            Assert.AreEqual(LogType.MowIntervalEnded, logItems[1].Type);
+            Assert.AreEqual("2018-07-24 18:00", logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
         }
 
         [TestMethod]
         public void CheckAndAct_Running24HoursInGoodWeatherGettingBadStartAtDay_CurrentTurnedOffOnce()
         {
             // Arrange
+            var systemTime = new TestSystemTime(2018, 7, 24, 16, 0);
             var config = TestFactory.NewConfig6To12And18To2359();
             var powerSwitch = new TestPowerSwitch(isActive: false);
-            var systemTime = new TestSystemTime(2018, 7, 24, 16, 0);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
@@ -277,15 +286,24 @@ namespace MowerTests
             string expectedLogDate = "2018-07-25 05:55";
             Assert.AreEqual(expectedLogDate, logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
             Assert.IsTrue(logItems[1].Message.StartsWith("Power was turned off."));
+
+            logItems = logger.LogItems.Where(x => x.Type == LogType.MowIntervalStarted || x.Type == LogType.MowIntervalEnded).ToList();
+            Assert.AreEqual(2, logItems.Count);
+
+            Assert.AreEqual(LogType.MowIntervalStarted, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 18:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+
+            Assert.AreEqual(LogType.MowIntervalEnded, logItems[1].Type);
+            Assert.AreEqual("2018-07-24 23:59", logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
         }
 
         [TestMethod]
         public void CheckAndAct_Running24HoursInBadWeatherGettingGood_CurrentTurnedOffOnce()
         {
             // Arrange
+            var systemTime = new TestSystemTime(2018, 7, 24, 3, 0);
             var config = TestFactory.NewConfig6To12And18To2359();
             var powerSwitch = new TestPowerSwitch(isActive: true);
-            var systemTime = new TestSystemTime(2018, 7, 24, 3, 0);
             var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
@@ -314,15 +332,24 @@ namespace MowerTests
             expectedLogDate = "2018-07-24 12:05";
             Assert.AreEqual(expectedLogDate, logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
             Assert.IsTrue(logItems[1].Message.StartsWith("Power was turned on."));
+
+            logItems = logger.LogItems.Where(x => x.Type == LogType.MowIntervalStarted || x.Type == LogType.MowIntervalEnded).ToList();
+            Assert.AreEqual(2, logItems.Count);
+
+            Assert.AreEqual(LogType.MowIntervalStarted, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 18:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+
+            Assert.AreEqual(LogType.MowIntervalEnded, logItems[1].Type);
+            Assert.AreEqual("2018-07-24 23:59", logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
         }
 
         [TestMethod]
         public void CheckAndAct_Running24HoursInBadWeatherGettingGoodStartAtDay_CurrentTurnedOffOnce()
         {
             // Arrange
+            var systemTime = new TestSystemTime(2018, 7, 24, 13, 0);
             var config = TestFactory.NewConfig6To12And18To2359();
             var powerSwitch = new TestPowerSwitch(isActive: true);
-            var systemTime = new TestSystemTime(2018, 7, 24, 12, 0);
             var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
@@ -351,15 +378,24 @@ namespace MowerTests
             expectedLogDate = "2018-07-25 00:04";
             Assert.AreEqual(expectedLogDate, logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
             Assert.IsTrue(logItems[1].Message.StartsWith("Power was turned on."));
+
+            logItems = logger.LogItems.Where(x => x.Type == LogType.MowIntervalStarted || x.Type == LogType.MowIntervalEnded).ToList();
+            Assert.AreEqual(2, logItems.Count);
+
+            Assert.AreEqual(LogType.MowIntervalStarted, logItems[0].Type);
+            Assert.AreEqual("2018-07-25 06:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+
+            Assert.AreEqual(LogType.MowIntervalEnded, logItems[1].Type);
+            Assert.AreEqual("2018-07-25 12:00", logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
         }
 
         [TestMethod]
         public void CheckAndAct_HasWorkedEnoughGoodWeatherAhead_PowerOffNotNeeded()
         {
             // Arrange
+            var systemTime = new TestSystemTime(2018, 6, 28, 17, 55);
             var config = TestFactory.NewConfig6To12And18To2359();
             var powerSwitch = new TestPowerSwitch(isActive: true);
-            var systemTime = new TestSystemTime(2018, 6, 28, 17, 55);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
@@ -388,12 +424,12 @@ namespace MowerTests
         }
 
         [TestMethod]
-        public void CheckAndAct_HasWorkedEnoughBadWeatherAhead_PowerOffNotNeeded()
+        public void CheckAndAct_HasWorkedEnoughBadWeatherAhead_PowerOnNeeded()
         {
             // Arrange
+            var systemTime = new TestSystemTime(2018, 6, 27, 5, 55);
             var config = TestFactory.NewConfig6To12And18To2359();
             var powerSwitch = new TestPowerSwitch(isActive: true);
-            var systemTime = new TestSystemTime(2018, 6, 27, 5, 55);
 
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             weatherForecast.AddExpectation(false, new DateTime(2018, 6, 28, 12, 0, 0));
@@ -420,9 +456,9 @@ namespace MowerTests
         public void CheckAndAct_HasWorkedEnoughGoodWeatherAhead2_PowerOffMowingNotNeeded()
         {
             // Arrange
+            var systemTime = new TestSystemTime(2018, 06, 24, 3, 0);
             var config = TestFactory.NewConfig3To10And16To2300();
             var powerSwitch = new TestPowerSwitch(isActive: false);
-            var systemTime = new TestSystemTime(2018, 06, 24, 3, 0);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
@@ -452,7 +488,7 @@ namespace MowerTests
         }
 
         [TestMethod]
-        public void CheckAndAct_HasWorkedEnoughGoodWeatherAheadLongTime_PowerOffMowingNotNeeded()
+        public void CheckAndAct_HasWorkedEnoughGoodWeatherAheadLongTime_PowerOnMowingNeeded()
         {
             // Arrange
             var config = TestFactory.NewConfig3To10And16To2300();
@@ -718,10 +754,11 @@ namespace MowerTests
             var systemTime = new TestSystemTime(2018, 7, 24, 15, 0);
             var powerSwitch = new TestPowerSwitch(isActive: true);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
-            weatherForecast.AddExpectation(false, new DateTime(2018, 7, 24, 21, 30, 0));
             var homeSensor = new TestHomeSensor(isHome: true);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
             var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+            weatherForecast.AddExpectation(false, new DateTime(2018, 7, 24, 21, 30, 0));
 
             // Act
             RunOverTime(mowController, systemTime, 10, 0);
@@ -743,14 +780,15 @@ namespace MowerTests
         public void CheckAndAct_BadWeatherAtEndOfIntervalUsingContactSensor_CurrentTurnedOffInTnterval()
         {
             // Arrange
-            var config = TestFactory.NewConfig3To10And16To2300(usingContactHomeSensor: true, maxMowingWithoutCharge: 2);
             var systemTime = new TestSystemTime(2018, 7, 24, 15, 0);
+            var config = TestFactory.NewConfig3To10And16To2300(usingContactHomeSensor: true, maxMowingWithoutCharge: 2);
             var powerSwitch = new TestPowerSwitch(isActive: true);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
-            weatherForecast.AddExpectation(false, new DateTime(2018, 7, 24, 21, 30, 0));
             var homeSensor = new TestHomeSensor(isHome: true);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
             var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+            weatherForecast.AddExpectation(false, new DateTime(2018, 7, 24, 21, 30, 0));
 
             // Act
             RunOverTime(mowController, systemTime, 1, 0);
@@ -853,6 +891,56 @@ namespace MowerTests
 
             Assert.AreEqual(LogType.PowerOn, logItems[0].Type);
             Assert.AreEqual("2018-07-24 02:30", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+        }
+
+        [TestMethod]
+        public void CheckAndAct_MowIntervalStarts_LogMessageWritten()
+        {
+            // Arrange
+            var config = TestFactory.NewConfig3To10And16To2300();
+            var systemTime = new TestSystemTime(2018, 7, 24, 3, 0);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            var homeSensor = new TestHomeSensor(isHome: true);
+            var logger = TestFactory.NewMowLogger(systemTime.Now);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowIntervalStarted || x.Type == LogType.MowIntervalEnded).ToList();
+
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
+            Assert.AreEqual(1, logItems.Count);
+
+            Assert.AreEqual(LogType.MowIntervalStarted, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 03:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+        }
+
+        [TestMethod]
+        public void CheckAndAct_MowIntervalEnds_LogMessageWritten()
+        {
+            // Arrange
+            var config = TestFactory.NewConfig0To6And12To18();
+            var systemTime = new TestSystemTime(2018, 7, 24, 6, 0);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            var homeSensor = new TestHomeSensor(isHome: true);
+            var logger = TestFactory.NewMowLogger(systemTime.Now);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowIntervalStarted || x.Type == LogType.MowIntervalEnded).ToList();
+
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
+            Assert.AreEqual(1, logItems.Count);
+
+            Assert.AreEqual(LogType.MowIntervalEnded, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 06:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
         }
     }
 }
