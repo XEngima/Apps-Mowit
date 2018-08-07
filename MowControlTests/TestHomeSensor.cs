@@ -17,6 +17,8 @@ namespace MowerTests
         {
             _systemTime = systemTime;
             IsHome = isHome;
+            MowerCameTime = mowerCameTime.HasValue ? mowerCameTime.Value : DateTime.MinValue;
+            MowerLeftTime = mowerLeftTime.HasValue ? mowerLeftTime.Value : DateTime.MinValue;
         }
 
         public void SetIsHome(bool isHome)
@@ -37,8 +39,8 @@ namespace MowerTests
 
         public bool IsHome { get; private set; }
 
-        public DateTime? MowerCameTime { get; private set; }
+        public DateTime MowerCameTime { get; private set; }
 
-        public DateTime? MowerLeftTime { get; private set; }
+        public DateTime MowerLeftTime { get; private set; }
     }
 }

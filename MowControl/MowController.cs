@@ -478,7 +478,7 @@ namespace MowControl
                             forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
                         }
 
-                        if (minutesLeftToIntervalStart <= 5 || !BetweenIntervals && HomeSensor.IsHome && (HomeSensor.MowerCameTime == null || (SystemTime.Now - HomeSensor.MowerCameTime.Value).TotalMinutes >= 30) || PowerSwitch.Status == PowerStatus.Unknown)
+                        if (minutesLeftToIntervalStart <= 5 || !BetweenIntervals && HomeSensor.IsHome && (SystemTime.Now - HomeSensor.MowerCameTime).TotalMinutes >= 30 || PowerSwitch.Status == PowerStatus.Unknown)
                         {
                             string weatherAheadDescription;
                             bool weatherWillBeGood = WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out weatherAheadDescription);

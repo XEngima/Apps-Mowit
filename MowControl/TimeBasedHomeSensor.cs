@@ -29,8 +29,8 @@ namespace MowControl
             _wasHomeDuringLastInterval = true;
             _firstCheck = true;
 
-            MowerCameTime = null;
-            MowerLeftTime = null;
+            MowerCameTime = DateTime.MinValue;
+            MowerLeftTime = DateTime.MinValue;
         }
 
         private bool InFirstMinute
@@ -136,8 +136,8 @@ namespace MowControl
             }
         }
 
-        public DateTime? MowerCameTime { get; private set; }
+        public DateTime MowerCameTime { get; private set; }
 
-        public DateTime? MowerLeftTime { get; private set; }
+        public DateTime MowerLeftTime { get; private set; }
     }
 }

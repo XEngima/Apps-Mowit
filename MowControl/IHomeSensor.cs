@@ -15,13 +15,13 @@ namespace MowControl
         bool IsHome { get; }
 
         /// <summary>
-        /// Gets the time when the mower last came. null if the mower has not yet came.
+        /// Gets the time when the mower last came. DateTime.Min if the mower has not yet came.
         /// </summary>
-        DateTime? MowerCameTime { get; }
+        DateTime MowerCameTime { get; }
 
         /// <summary>
-        /// Gets the time when the mower last left. null if the mower has not yet left.
+        /// Gets the time when the mower last left. DateTime.Min if the mower has not yet left.
         /// </summary>
-        DateTime? MowerLeftTime { get; }
+        DateTime MowerLeftTime { get; }
     }
 }

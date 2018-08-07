@@ -21,8 +21,8 @@ namespace MowControl
             _timeIntervals = timeIntervals;
             _powerSwitch = powerSwitch;
 
-            MowerCameTime = null;
-            MowerLeftTime = null;
+            MowerCameTime = DateTime.MinValue;
+            MowerLeftTime = DateTime.MinValue;
 
             StartAsync();
         }
@@ -122,8 +122,8 @@ namespace MowControl
 
         public bool IsHome { get; private set; }
 
-        public DateTime? MowerCameTime { get; private set; }
+        public DateTime MowerCameTime { get; private set; }
 
-        public DateTime? MowerLeftTime { get; private set; }
+        public DateTime MowerLeftTime { get; private set; }
     }
 }
