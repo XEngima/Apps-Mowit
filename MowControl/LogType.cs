@@ -14,7 +14,7 @@ namespace MowControl
         MowerLeft = 6,
         MowerLost = 7,
         MowerStuckInHome = 8,
-        MowIntervalStarted = 9,
-        MowIntervalEnded = 10,
+        MowingStarted = 9,
+        MowingEnded = 10,
     }
 }

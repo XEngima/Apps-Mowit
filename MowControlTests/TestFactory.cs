@@ -37,7 +37,10 @@ namespace MowerTests
             };
         }
 
-        public static IMowControlConfig NewConfig6To12And18To2359()
+        public static IMowControlConfig NewConfig6To12And18To2359(
+            bool usingContactHomeSensor = false,
+            int maxMowingWithoutCharge = 2,
+            int maxChargingHours = 2)
         {
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(6, 0, 12, 0));
@@ -46,13 +49,20 @@ namespace MowerTests
             return new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
-                AverageWorkPerDayHours = 8,
+                AverageWorkPerDayHours = 10,
                 MaxHourlyThunderPercent = 0,
-                MaxHourlyPrecipitaionMillimeter = 0
+                MaxHourlyPrecipitaionMillimeter = 0,
+                UsingContactHomeSensor = usingContactHomeSensor,
+                MaxMowingHoursWithoutCharge = maxMowingWithoutCharge,
+                MaxChargingHours = maxChargingHours,
             };
         }
 
-        public static IMowControlConfig NewConfig0To6And12To18()
+        public static IMowControlConfig NewConfig0To6And12To18(
+            bool usingContactHomeSensor = false,
+            int maxMowingWithoutCharge = 2,
+            int maxChargingHours = 2)
+
         {
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(0, 0, 6, 0));
@@ -63,7 +73,10 @@ namespace MowerTests
                 TimeIntervals = timeIntervals,
                 AverageWorkPerDayHours = 8,
                 MaxHourlyThunderPercent = 0,
-                MaxHourlyPrecipitaionMillimeter = 0
+                MaxHourlyPrecipitaionMillimeter = 0,
+                UsingContactHomeSensor = usingContactHomeSensor,
+                MaxMowingHoursWithoutCharge = maxMowingWithoutCharge,
+                MaxChargingHours = maxChargingHours,
             };
         }
 

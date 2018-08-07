@@ -13,5 +13,15 @@ namespace MowControl
         /// Hämtar huruvida robotgräsklipparen står i boet eller inte.
         /// </summary>
         bool IsHome { get; }
+
+        /// <summary>
+        /// Gets the time when the mower last came. null if the mower has not yet came.
+        /// </summary>
+        DateTime? MowerCameTime { get; }
+
+        /// <summary>
+        /// Gets the time when the mower last left. null if the mower has not yet left.
+        /// </summary>
+        DateTime? MowerLeftTime { get; }
     }
 }

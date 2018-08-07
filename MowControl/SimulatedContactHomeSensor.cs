@@ -21,6 +21,9 @@ namespace MowControl
             _timeIntervals = timeIntervals;
             _powerSwitch = powerSwitch;
 
+            MowerCameTime = null;
+            MowerLeftTime = null;
+
             StartAsync();
         }
 
@@ -91,6 +94,7 @@ namespace MowControl
                 
                 // Mower leaving
                 IsHome = false;
+                MowerLeftTime = _systemTime.Now;
 
                 // Calculate the time left, but take into account the interval's end time and add some for the mower to make it back.
 
@@ -108,6 +112,7 @@ namespace MowControl
 
                 // Mower coming
                 IsHome = true;
+                MowerCameTime = _systemTime.Now;
 
                 // Charge for 50 to 70 minutes
                 int chargingTicks = random.Next(fiftyMinuteTicks, seventyMinuteTicks);
@@ -116,5 +121,9 @@ namespace MowControl
         }
 
         public bool IsHome { get; private set; }
+
+        public DateTime? MowerCameTime { get; private set; }
+
+        public DateTime? MowerLeftTime { get; private set; }
     }
 }

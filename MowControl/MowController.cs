@@ -172,6 +172,11 @@ namespace MowControl
         /// <returns>true om klippning är nödvändig, annars false.</returns>
         private bool MowingNecessary()
         {
+            if (Config.UsingContactHomeSensor)
+            {
+                return true;
+            }
+
             double workHours = 0d;
             double hoursOverSchedule = 0d;
             bool powerIsOn = false;
@@ -254,35 +259,37 @@ namespace MowControl
             return mowingNecessary;
         }
 
-        /// <summary>
-        /// Gets the time when the mower came. SystemTime.Now if the mower has not came back or if the time is unknown.
-        /// </summary>
-        private DateTime MowerCameTime
-        {
-            get
-            {
-                if (HomeSensor.IsHome)
-                {
-                    var mowerLeftLogItem = Logger.LogItems
-                        .OrderByDescending(x => x.Time)
-                        .FirstOrDefault(x => x.Type == LogType.MowerLeft);
+        ///// <summary>
+        ///// Gets the time when the mower came. SystemTime.Now if the mower has not came back or if the time is unknown.
+        ///// </summary>
+        //private DateTime? MowerCameTime
+        //{
+        //    get
+        //    {
+        //        return HomeSensor.MowerCameTime;
 
-                    var mowerCameLogItem = Logger.LogItems
-                        .OrderByDescending(x => x.Time)
-                        .FirstOrDefault(x => x.Type == LogType.MowerCame);
+        //        //if (HomeSensor.IsHome)
+        //        //{
+        //        //    var mowerLeftLogItem = Logger.LogItems
+        //        //        .OrderByDescending(x => x.Time)
+        //        //        .FirstOrDefault(x => x.Type == LogType.MowerLeft);
 
-                    if (mowerCameLogItem != null)
-                    {
-                        if (mowerLeftLogItem == null || mowerLeftLogItem.Time < mowerCameLogItem.Time)
-                        {
-                            return mowerCameLogItem.Time;
-                        }
-                    }
-                }
+        //        //    var mowerCameLogItem = Logger.LogItems
+        //        //        .OrderByDescending(x => x.Time)
+        //        //        .FirstOrDefault(x => x.Type == LogType.MowerCame);
 
-                return SystemTime.Now;
-            }
-        }
+        //        //    if (mowerCameLogItem != null)
+        //        //    {
+        //        //        if (mowerLeftLogItem == null || mowerLeftLogItem.Time < mowerCameLogItem.Time)
+        //        //        {
+        //        //            return mowerCameLogItem.Time;
+        //        //        }
+        //        //    }
+        //        //}
+
+        //        //return SystemTime.Now;
+        //    }
+        //}
 
         /// <summary>
         /// Returns whether the current system time is between (or not in) time intervals.
@@ -366,7 +373,7 @@ namespace MowControl
 
                 if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.StartHour == SystemTime.Now.Hour && NextOrCurrentInterval.StartMin == SystemTime.Now.Minute)
                 {
-                    Logger.Write(SystemTime.Now, LogType.MowIntervalStarted, "Mow interval started.");
+                    Logger.Write(SystemTime.Now, LogType.MowingStarted, "Mow interval started.");
                 }
 
                 // Check if mower has entered or exited its home since last time
@@ -418,12 +425,25 @@ namespace MowControl
                             if (SystemTime.Now < minutesFromEnd)
                             {
                                 int forecastHours = interval.EndHour - SystemTime.Now.Hour + 2;
+
+                                if (Config.UsingContactHomeSensor)
+                                {
+                                    forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
+                                }
+
                                 string weatherAheadDescription;
 
-                                if (WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out weatherAheadDescription) && MowingNecessary())
+                                bool weatherWillBeGood = WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out weatherAheadDescription);
+                                bool mowingNecessary = MowingNecessary();
+                                if (weatherWillBeGood && mowingNecessary)
                                 {
                                     PowerSwitch.TurnOn();
                                     Logger.Write(SystemTime.Now, LogType.PowerOn, "Power was turned on. " + weatherAheadDescription);
+
+                                    if (!BetweenIntervals)
+                                    {
+                                        Logger.Write(SystemTime.Now, LogType.MowingStarted, "Mow interval started.");
+                                    }
                                 }
                             }
                         }
@@ -440,7 +460,7 @@ namespace MowControl
 
                 if (PowerSwitch.Status != PowerStatus.Off)
                 {
-                    if (HomeSensor.IsHome) // TODO: Fel här när kraften är Unknown...
+                    if (HomeSensor.IsHome) // TODO: Fel i TimeBasedHomeSensor när kraften är Unknown...
                     {
                         DateTime nextIntervalExactStartTime = new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, NextInterval.StartHour, NextInterval.StartMin, 0);
                         if (nextIntervalExactStartTime < SystemTime.Now)
@@ -458,14 +478,20 @@ namespace MowControl
                             forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
                         }
 
-                        if (minutesLeftToIntervalStart <= 5 || !BetweenIntervals && HomeSensor.IsHome && (SystemTime.Now - MowerCameTime).TotalMinutes >= 30 || PowerSwitch.Status == PowerStatus.Unknown)
+                        if (minutesLeftToIntervalStart <= 5 || !BetweenIntervals && HomeSensor.IsHome && (HomeSensor.MowerCameTime == null || (SystemTime.Now - HomeSensor.MowerCameTime.Value).TotalMinutes >= 30) || PowerSwitch.Status == PowerStatus.Unknown)
                         {
                             string weatherAheadDescription;
+                            bool weatherWillBeGood = WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out weatherAheadDescription);
 
-                            if (!WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out weatherAheadDescription))
+                            if (!weatherWillBeGood)
                             {
                                 PowerSwitch.TurnOff();
                                 Logger.Write(SystemTime.Now, LogType.PowerOff, "Power was turned off. " + weatherAheadDescription);
+
+                                if (!BetweenIntervals)
+                                {
+                                    Logger.Write(SystemTime.Now, LogType.MowingEnded, "Mow interval ended.");
+                                }
                             }
 
                             // If mowing not necessary, turn off power
@@ -473,6 +499,11 @@ namespace MowControl
                             {
                                 PowerSwitch.TurnOff();
                                 Logger.Write(SystemTime.Now, LogType.PowerOff, "Power was turned off. Mowing not necessary.");
+
+                                if (!BetweenIntervals)
+                                {
+                                    Logger.Write(SystemTime.Now, LogType.MowingEnded, "Mow interval ended.");
+                                }
                             }
                         }
                     }
@@ -482,7 +513,7 @@ namespace MowControl
 
                 if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.EndHour == SystemTime.Now.Hour && NextOrCurrentInterval.EndMin == SystemTime.Now.Minute)
                 {
-                    Logger.Write(SystemTime.Now, LogType.MowIntervalEnded, "Mow interval ended.");
+                    Logger.Write(SystemTime.Now, LogType.MowingEnded, "Mow interval ended.");
                 }
             }
             catch (Exception ex)
