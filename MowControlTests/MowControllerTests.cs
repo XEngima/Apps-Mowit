@@ -998,6 +998,33 @@ namespace MowerTests
         }
 
         [TestMethod]
+        public void CheckAndAct_MowingEndsWhenMowerIsLost_LogMessageWritten()
+        {
+            // Arrange
+            var systemTime = new TestSystemTime(2018, 7, 24, 5, 30);
+            var config = TestFactory.NewConfig0To6And12To18(usingContactHomeSensor: true);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime,
+                isHome: false,
+                mowerLeftTime: new DateTime(2018, 7, 24, 4, 3, 30));
+            var logger = TestFactory.NewMowLogger(systemTime.Now);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowingStarted || x.Type == LogType.MowingEnded).ToList();
+
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
+            Assert.AreEqual(1, logItems.Count);
+
+            Assert.AreEqual(LogType.MowingEnded, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 05:30", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+        }
+
+        [TestMethod]
         public void CheckAndAct_LateNightBadWeatherInTheMorning_NoBothTurnOnAndOrTurnOff()
         {
             // Arrange
