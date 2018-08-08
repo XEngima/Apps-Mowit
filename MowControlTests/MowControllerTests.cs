@@ -980,7 +980,7 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
             var homeSensor = new TestHomeSensor(systemTime,
                 isHome: true,
-                mowerCameTime: new DateTime(2018, 7, 24, 4, 0, 0));
+                mowerCameTime: new DateTime(2018, 7, 24, 4, 25, 0));
             var logger = TestFactory.NewMowLogger(systemTime.Now);
             var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
 
@@ -1007,9 +1007,11 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
             var homeSensor = new TestHomeSensor(systemTime,
                 isHome: false,
-                mowerLeftTime: new DateTime(2018, 7, 24, 4, 3, 30));
-            var logger = TestFactory.NewMowLogger(systemTime.Now);
+                mowerLeftTime: new DateTime(2018, 7, 24, 3, 30, 0));
+            var logger = TestFactory.NewMowLogger(new DateTime(2018, 7, 24, 0, 0, 0));
             var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+            logger.Write(new DateTime(2018, 7, 24, 3, 30, 0), LogType.MowerLeft, "Mower left");
 
             // Act
             mowController.CheckAndAct();

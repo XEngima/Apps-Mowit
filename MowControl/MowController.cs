@@ -12,7 +12,7 @@ namespace MowControl
     {
         private bool _mowerIsHome;
 
-        public static string Version { get { return "1.0"; } }
+        public static string Version { get { return "1.02"; } }
 
         public MowController(
             IMowControlConfig config, 
@@ -373,7 +373,7 @@ namespace MowControl
 
                 if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.StartHour == SystemTime.Now.Hour && NextOrCurrentInterval.StartMin == SystemTime.Now.Minute)
                 {
-                    Logger.Write(SystemTime.Now, LogType.MowingStarted, "Mow interval started.");
+                    Logger.Write(SystemTime.Now, LogType.MowingStarted, "Mowing started.");
                 }
 
                 // Check if mower has entered or exited its home since last time
@@ -384,7 +384,7 @@ namespace MowControl
 
                     if (_mowerIsHome)
                     {
-                        Logger.Write(SystemTime.Now, LogType.MowerCame, "Mower came home.");
+                        Logger.Write(SystemTime.Now, LogType.MowerCame, "Mower came.");
                     }
                     else
                     {
@@ -404,9 +404,14 @@ namespace MowControl
                         .OrderByDescending(x => x.Time)
                         .FirstOrDefault(x => x.Type == LogType.MowerLost || x.Type == LogType.MowerCame);
 
-                    if (lastMowerLeftLogItem?.Time.AddHours(Config.MaxMowingHoursWithoutCharge) < SystemTime.Now && lastLogItem?.Type != LogType.MowerLost)
+                    if (lastMowerLeftLogItem?.Time.AddHours(Config.MaxMowingHoursWithoutCharge) <= SystemTime.Now && lastLogItem?.Type != LogType.MowerLost)
                     {
                         Logger.Write(SystemTime.Now, LogType.MowerLost, $"Mower seems to be lost. It did not return home after {Config.MaxMowingHoursWithoutCharge} hours as expected.");
+                        
+                        if (!BetweenIntervals)
+                        {
+                            Logger.Write(SystemTime.Now, LogType.MowingEnded, "Mowing ended.");
+                        }
                     }
                 }
 
@@ -442,7 +447,7 @@ namespace MowControl
 
                                     if (!BetweenIntervals)
                                     {
-                                        Logger.Write(SystemTime.Now, LogType.MowingStarted, "Mow interval started.");
+                                        Logger.Write(SystemTime.Now, LogType.MowingStarted, "Mowing started.");
                                     }
                                 }
                             }
@@ -490,7 +495,7 @@ namespace MowControl
 
                                 if (!BetweenIntervals)
                                 {
-                                    Logger.Write(SystemTime.Now, LogType.MowingEnded, "Mow interval ended.");
+                                    Logger.Write(SystemTime.Now, LogType.MowingEnded, "Mowing ended.");
                                 }
                             }
 
@@ -502,7 +507,7 @@ namespace MowControl
 
                                 if (!BetweenIntervals)
                                 {
-                                    Logger.Write(SystemTime.Now, LogType.MowingEnded, "Mow interval ended.");
+                                    Logger.Write(SystemTime.Now, LogType.MowingEnded, "Mowing ended.");
                                 }
                             }
                         }
@@ -513,7 +518,7 @@ namespace MowControl
 
                 if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.EndHour == SystemTime.Now.Hour && NextOrCurrentInterval.EndMin == SystemTime.Now.Minute)
                 {
-                    Logger.Write(SystemTime.Now, LogType.MowingEnded, "Mow interval ended.");
+                    Logger.Write(SystemTime.Now, LogType.MowingEnded, "Mowing ended.");
                 }
             }
             catch (Exception ex)
