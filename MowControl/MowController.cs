@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,9 +16,9 @@ namespace MowControl
         public static string Version { get { return "1.02"; } }
 
         public MowController(
-            IMowControlConfig config, 
-            IPowerSwitch powerSwitch, 
-            IWeatherForecast weatherForecast, 
+            IMowControlConfig config,
+            IPowerSwitch powerSwitch,
+            IWeatherForecast weatherForecast,
             ISystemTime systemTime,
             IHomeSensor homeSensor,
             IMowLogger logger)
@@ -123,7 +124,9 @@ namespace MowControl
         /// <summary>
         /// Gets next interval's start time.
         /// </summary>
-        public DateTime NextIntervalStartTime { get
+        public DateTime NextIntervalStartTime
+        {
+            get
             {
                 DateTime nextIntervalStartTime = new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, NextInterval.StartHour, NextInterval.StartMin, 0);
                 if (nextIntervalStartTime < SystemTime.Now)
@@ -369,6 +372,54 @@ namespace MowControl
 
             try
             {
+                // If a report was not made for yesterday, and if mowing started yesterday or before, create a report.
+
+                var startLogItem = Logger.LogItems.FirstOrDefault(x => x.Type == LogType.MowControllerStarted);
+                var todayStartTime = new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, 0, 0, 0);
+
+                if (startLogItem?.Time < todayStartTime)
+                {
+                    var yesterdayStartTime = new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, 0, 0, 0).AddDays(-1);
+
+                    var reportLogItem = Logger.LogItems.FirstOrDefault(x => x.Type == LogType.DailyReport && x.Time >= yesterdayStartTime && x.Time < todayStartTime);
+
+                    if (reportLogItem == null)
+                    {
+                        var mowingLogItems = Logger.LogItems.Where(x => (x.Type == LogType.MowingStarted || x.Type == LogType.MowingEnded) && x.Time >= yesterdayStartTime && x.Time < todayStartTime);
+
+                        var sb = new StringBuilder();
+                        sb.AppendLine("Mowing Summary " + yesterdayStartTime.ToString("yyyy-MM-dd"));
+                        sb.AppendLine();
+                        DateTime startTime = DateTime.MinValue;
+                        var mowingTime = new TimeSpan();
+
+                        foreach (LogItem mowingLogItem in mowingLogItems)
+                        {
+                            sb.Append(mowingLogItem.Time.ToString("HH:mm"));
+                            sb.Append(" ");
+                            sb.AppendLine(mowingLogItem.Message);
+
+                            if (mowingLogItem.Type == LogType.MowingStarted)
+                            {
+                                startTime = mowingLogItem.Time;
+                            }
+                            else
+                            {
+                                mowingTime += (mowingLogItem.Time - startTime);
+                            }
+                        }
+
+                        sb.AppendLine();
+                        sb.Append("Total mowed: ");
+                        sb.Append(Math.Floor(mowingTime.TotalHours));
+                        sb.Append(":");
+                        sb.Append(mowingTime.Minutes);
+                        sb.AppendLine(" hours.");
+
+                        Logger.Write(SystemTime.Now, LogType.DailyReport, sb.ToString());
+                    }
+                }
+
                 // Check if there has ocurred an interval start, and in case it has, write a log message
 
                 if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.StartHour == SystemTime.Now.Hour && NextOrCurrentInterval.StartMin == SystemTime.Now.Minute)
@@ -407,7 +458,7 @@ namespace MowControl
                     if (lastMowerLeftLogItem?.Time.AddHours(Config.MaxMowingHoursWithoutCharge) <= SystemTime.Now && lastLogItem?.Type != LogType.MowerLost)
                     {
                         Logger.Write(SystemTime.Now, LogType.MowerLost, $"Mower seems to be lost. It did not return home after {Config.MaxMowingHoursWithoutCharge} hours as expected.");
-                        
+
                         if (!BetweenIntervals)
                         {
                             Logger.Write(SystemTime.Now, LogType.MowingEnded, "Mowing ended.");

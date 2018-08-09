@@ -8,6 +8,9 @@ namespace MowerTests
     public class TestHomeSensor : IHomeSensor
     {
         private ISystemTime _systemTime;
+        private bool _isHome;
+        DateTime _startTime;
+        //bool _simulateComingAndLeaving;
 
         public TestHomeSensor(
             ISystemTime systemTime,
@@ -16,6 +19,8 @@ namespace MowerTests
             DateTime? mowerLeftTime = null)
         {
             _systemTime = systemTime;
+            _startTime = systemTime.Now;
+            //_simulateComingAndLeaving = simulateComingAndLeaving;
             IsHome = isHome;
             MowerCameTime = mowerCameTime.HasValue ? mowerCameTime.Value : DateTime.MinValue;
             MowerLeftTime = mowerLeftTime.HasValue ? mowerLeftTime.Value : DateTime.MinValue;
@@ -37,7 +42,22 @@ namespace MowerTests
             IsHome = isHome;
         }
 
-        public bool IsHome { get; private set; }
+        public bool IsHome {
+            get
+            {
+                //if (_)
+                //if (_startTime.ToString("yyyy-MM-dd") != _systemTime.Now.Hour _systemTime.Now.Minute == 0)
+                //{
+                //    _isHome = !_isHome;
+                //}
+
+                return _isHome;
+            }
+            set
+            {
+                _isHome = value;
+            }
+        }
 
         public DateTime MowerCameTime { get; private set; }
 

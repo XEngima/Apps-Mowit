@@ -1050,5 +1050,44 @@ namespace MowerTests
             Assert.AreEqual(0, powerSwitch.TurnOffs);
             Assert.AreEqual(0, powerSwitch.TurnOns);
         }
+
+        [TestMethod]
+        public void RunningOverTime_OneDayOrdinaryMowing_CorrectDailyReport()
+        {
+            // Arrange
+            var systemTime = new TestSystemTime(2018, 7, 24, 0, 0);
+            var config = TestFactory.NewConfig6To12And18To2359(usingContactHomeSensor: true);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime, isHome: true);
+            var logger = TestFactory.NewMowLogger(systemTime.Now);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+            // Act
+            RunOverTime(mowController, systemTime, 8, 0);
+            homeSensor.SetIsHome(false);
+            RunOverTime(mowController, systemTime, 2, 0);
+            homeSensor.SetIsHome(true);
+            RunOverTime(mowController, systemTime, 14, 5);
+
+            // Assert
+            var daySummaryItem = logger.LogItems.FirstOrDefault(x => x.Type == LogType.DailyReport);
+
+            Assert.IsNotNull(daySummaryItem);
+
+            string expected = @"Mowing Summary 2018-07-24
+
+                              06:00 Mowing started.
+                              12:00 Mowing ended.
+                              18:00 Mowing started.
+                              23:59 Mowing ended.
+
+                              Total mowed: 11:59 hours.
+                              ".Replace(" ", "");
+
+            string actual = daySummaryItem.Message.Replace(" ", "");
+
+            Assert.AreEqual(expected, actual);
+        }
     }
 }

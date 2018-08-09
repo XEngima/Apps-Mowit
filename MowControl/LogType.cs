@@ -16,5 +16,6 @@ namespace MowControl
         MowerStuckInHome = 8,
         MowingStarted = 9,
         MowingEnded = 10,
+        DailyReport = 11,
     }
 }
