@@ -13,7 +13,7 @@ namespace MowControl
     {
         private bool _mowerIsHome;
 
-        public static string Version { get { return "1.04"; } }
+        public static string Version { get { return "1.05"; } }
 
         public MowController(
             IMowControlConfig config,
@@ -21,7 +21,8 @@ namespace MowControl
             IWeatherForecast weatherForecast,
             ISystemTime systemTime,
             IHomeSensor homeSensor,
-            IMowLogger logger)
+            IMowLogger logger,
+            IRainSensor rainSensor)
         {
             Config = config;
             PowerSwitch = powerSwitch;
@@ -29,6 +30,7 @@ namespace MowControl
             SystemTime = systemTime;
             HomeSensor = homeSensor;
             Logger = logger;
+            RainSensor = rainSensor;
 
             _mowerIsHome = HomeSensor.IsHome;
         }
@@ -39,6 +41,7 @@ namespace MowControl
         private ISystemTime SystemTime { get; set; }
         private IHomeSensor HomeSensor { get; set; }
         private IMowLogger Logger { get; set; }
+        private IRainSensor RainSensor { get; set; }
 
         /// <summary>
         /// Hämtar nästa intervall. Om mitt i ett intervall hämtas intervallet efter det.

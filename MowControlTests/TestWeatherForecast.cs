@@ -11,6 +11,7 @@ namespace MowerTests
         private IList<WeatherPeriod> _weatherPeriods = new List<WeatherPeriod>();
         private ISystemTime _systemTime;
         private bool _throwException;
+        private DateTime _lastRainTime;
 
         /// <summary>
         /// Gets a text describing the weather ahead. Set when CheckIfWeatherWillBeGood is executed.
@@ -22,11 +23,17 @@ namespace MowerTests
             _weatherPeriods.Add(new WeatherPeriod(new DateTime(1970, 1, 1), expectingGoodWeather));
             _systemTime = systemTime;
             _throwException = false;
+            _lastRainTime = DateTime.MinValue;
         }
 
         public void SetFailureAndThrowException(bool throwException)
         {
             _throwException = throwException;
+        }
+
+        public void SetLastRainTime(DateTime lastRainTime)
+        {
+            _lastRainTime = lastRainTime;
         }
 
         /// <summary>

@@ -41,7 +41,8 @@ namespace MowerTests
             var homeSensor = new TestHomeSensor(systemTime, true);
             var logger = new MowLogger();
             var weatherForecast = new TestWeatherForecast(true, systemTime);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
             Exception receivedException = null;
 
             // Act
@@ -69,7 +70,8 @@ namespace MowerTests
             };
             var powerSwitch = new TestPowerSwitch();
             var homeSensor = new TestHomeSensor(systemTime, true);
-            var mowController = new MowController(config, powerSwitch, null, systemTime, homeSensor, null);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, null, systemTime, homeSensor, null, rainSensor);
             Exception receivedException = null;
 
             // Act
@@ -97,7 +99,8 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, true);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -126,7 +129,8 @@ namespace MowerTests
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
             var logger = new MowLogger();
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -146,7 +150,8 @@ namespace MowerTests
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             RunOverTime(mowController, systemTime, 0, 10);
@@ -175,7 +180,8 @@ namespace MowerTests
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             RunOverTime(mowController, systemTime, 0, 10);
@@ -204,7 +210,8 @@ namespace MowerTests
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             RunOverTime(mowController, systemTime, 24, 0);
@@ -226,7 +233,8 @@ namespace MowerTests
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             RunOverTime(mowController, systemTime, 12, 0);
@@ -267,7 +275,8 @@ namespace MowerTests
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             RunOverTime(mowController, systemTime, 12, 0);
@@ -308,7 +317,8 @@ namespace MowerTests
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             RunOverTime(mowController, systemTime, 12, 0);
@@ -354,7 +364,8 @@ namespace MowerTests
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             RunOverTime(mowController, systemTime, 12, 0);
@@ -399,12 +410,13 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
-
             var logger = new MowLogger();
+            var rainSensor = new TestRainSensor(isWet: false);
+
             logger.Write(new DateTime(2018, 6, 26, 0, 0, 0), LogType.MowControllerStarted, "Mow controller started.");
             logger.Write(new DateTime(2018, 6, 26, 6, 0, 0), LogType.PowerOn, "Power was turned on.");
 
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -441,7 +453,8 @@ namespace MowerTests
             logger.Write(new DateTime(2018, 06, 25, 0, 0, 0), LogType.MowControllerStarted, "");
             logger.Write(new DateTime(2018, 06, 25, 0, 0, 0), LogType.PowerOn, "");
 
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -465,7 +478,8 @@ namespace MowerTests
 
             var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 3, 0, 0));
 
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             RunOverTime(mowController, systemTime, 72, 0); // 3 dagar
@@ -501,7 +515,8 @@ namespace MowerTests
             var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 3, 0, 0));
             //logger.Write(new DateTime(2018, ), LogType.MowControllerStarted, "");
 
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             RunOverTime(mowController, systemTime, 240, 0); // 10 dagar
@@ -531,7 +546,8 @@ namespace MowerTests
 
             var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 0, 0, 0));
 
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -563,7 +579,8 @@ namespace MowerTests
 
             var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 0, 0, 0));
 
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -595,7 +612,8 @@ namespace MowerTests
 
             var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 0, 0, 0));
 
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -624,7 +642,8 @@ namespace MowerTests
             var homeSensor = new TestHomeSensor(systemTime, true);
             var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 0, 0, 0));
 
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             homeSensor.SetIsHome(false); // Mower leaves
             mowController.CheckAndAct(); // Sets mower to away
@@ -652,7 +671,8 @@ namespace MowerTests
             var homeSensor = new TestHomeSensor(systemTime, true);
             var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 0, 0, 0));
 
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct(); // Should see that mower seems to be stuck in home
@@ -675,8 +695,8 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, true);
             var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 0, 0, 0));
-
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             homeSensor.SetIsHome(false); // Mower leaves
             mowController.CheckAndAct(); // Sets mower to away
@@ -703,8 +723,8 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, true);
             var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 0, 0, 0));
-
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             homeSensor.SetIsHome(false); // Mower leaves
             mowController.CheckAndAct(); // Sets mower to away
@@ -729,7 +749,8 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, true);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -756,7 +777,8 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, isHome: true);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             weatherForecast.AddExpectation(false, new DateTime(2018, 7, 24, 21, 30, 0));
 
@@ -786,7 +808,8 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, isHome: true);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             weatherForecast.AddExpectation(false, new DateTime(2018, 7, 24, 21, 30, 0));
 
@@ -824,7 +847,8 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, isHome: true);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -851,7 +875,8 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, isHome: true);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -878,7 +903,8 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, isHome: true);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -903,7 +929,8 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, isHome: true);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -928,7 +955,8 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, isHome: true);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -955,7 +983,8 @@ namespace MowerTests
                 isHome: false, 
                 mowerLeftTime: new DateTime(2018, 7, 24, 4, 35, 0));
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -982,7 +1011,8 @@ namespace MowerTests
                 isHome: true,
                 mowerLeftTime: new DateTime(2018, 7, 24, 3, 30, 0));
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -1009,7 +1039,8 @@ namespace MowerTests
                 isHome: true,
                 mowerCameTime: new DateTime(2018, 7, 24, 4, 25, 0));
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -1036,7 +1067,8 @@ namespace MowerTests
                 isHome: false,
                 mowerLeftTime: new DateTime(2018, 7, 24, 3, 30, 0));
             var logger = TestFactory.NewMowLogger(new DateTime(2018, 7, 24, 0, 0, 0));
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             logger.Write(new DateTime(2018, 7, 24, 3, 30, 0), LogType.MowerLeft, "Mower left");
 
@@ -1065,7 +1097,8 @@ namespace MowerTests
                 isHome: true,
                 mowerCameTime: new DateTime(2018, 7, 24, 21, 0, 0));
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             weatherForecast.AddExpectation(false, new DateTime(2018, 7, 25, 1, 0, 0));
 
@@ -1088,7 +1121,8 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, isHome: true);
             var logger = TestFactory.NewMowLogger(systemTime.Now);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             RunOverTime(mowController, systemTime, 8, 0);
@@ -1115,6 +1149,30 @@ namespace MowerTests
             string actual = daySummaryItem.Message.Replace(" ", "");
 
             Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void CheckAndAct_Rain_WaitingForDryUpBeforeStart()
+        {
+            // Arrange
+            var systemTime = new TestSystemTime(2018, 7, 24, 6, 0);
+            var config = TestFactory.NewConfig6To12And18To2359(usingContactHomeSensor: true);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.Off);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime, isHome: true);
+            var logger = TestFactory.NewMowLogger(systemTime.Now);
+            var rainSensor = new TestRainSensor(isWet: true);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
+
+            weatherForecast.SetLastRainTime(new DateTime(2018, 7, 24, 5, 0, 0));
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.Off);
+            Assert.AreEqual(0, powerSwitch.TurnOns);
+            Assert.AreEqual(1, powerSwitch.TurnOffs);
         }
     }
 }
