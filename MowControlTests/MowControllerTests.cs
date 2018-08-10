@@ -919,7 +919,7 @@ namespace MowerTests
         }
 
         [TestMethod]
-        public void CheckAndAct_MowIntervalEnds_LogMessageWritten()
+        public void CheckAndAct_MowingEndsWhenIntervalEndsAndMowerHome_LogMessageWritten()
         {
             // Arrange
             var systemTime = new TestSystemTime(2018, 7, 24, 6, 0);
@@ -944,7 +944,34 @@ namespace MowerTests
         }
 
         [TestMethod]
-        public void CheckAndAct_MowIntervalStartsInAnInterval_LogMessageWritten()
+        public void CheckAndAct_MowingEndsWhenIntervalEndsAndMowerAway_LogMessageWritten()
+        {
+            // Arrange
+            var systemTime = new TestSystemTime(2018, 7, 24, 6, 0);
+            var config = TestFactory.NewConfig0To6And12To18();
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime,
+                isHome: false, 
+                mowerLeftTime: new DateTime(2018, 7, 24, 4, 35, 0));
+            var logger = TestFactory.NewMowLogger(systemTime.Now);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowingStarted || x.Type == LogType.MowingEnded).ToList();
+
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
+            Assert.AreEqual(1, logItems.Count);
+
+            Assert.AreEqual(LogType.MowingEnded, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 06:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+        }
+
+        [TestMethod]
+        public void CheckAndAct_MowingStartsInAnInterval_LogMessageWritten()
         {
             // Arrange
             var systemTime = new TestSystemTime(2018, 7, 24, 5, 0);
@@ -971,7 +998,7 @@ namespace MowerTests
         }
 
         [TestMethod]
-        public void CheckAndAct_MowIntervalEndsInAnInterval_LogMessageWritten()
+        public void CheckAndAct_MowingEndsInAnInterval_LogMessageWritten()
         {
             // Arrange
             var systemTime = new TestSystemTime(2018, 7, 24, 5, 0);
