@@ -13,7 +13,7 @@ namespace MowControl
     {
         private bool _mowerIsHome;
 
-        public static string Version { get { return "1.07"; } }
+        public static string Version { get { return "1.08"; } }
 
         public MowController(
             IMowControlConfig config,
