@@ -664,9 +664,11 @@ namespace MowerTests
         public void CheckAndAct_NotLeavingHome_LogMessageTellingMowerNeverLeft()
         {
             // Arrange
-            var config = TestFactory.NewConfig3To10And16To2300(usingContactHomeSensor: true);
+            var systemTime = new TestSystemTime(2018, 06, 24, 18, 0);
+            var config = TestFactory.NewConfig3To10And16To2300(
+                usingContactHomeSensor: true, 
+                maxChargingHours: 2);
             var powerSwitch = new TestPowerSwitch(isActive: true);
-            var systemTime = new TestSystemTime(2018, 06, 24, 18, 10);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, true);
             var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 0, 0, 0));
