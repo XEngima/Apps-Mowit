@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MowControllerTests
+namespace MowerTests
 {
     public class TestSmhi : ISmhi
     {

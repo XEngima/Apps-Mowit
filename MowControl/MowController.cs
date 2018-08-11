@@ -143,12 +143,6 @@ namespace MowControl
 
         public async Task StartAsync()
         {
-            await Task.Yield();
-            Run();
-        }
-
-        private void Run()
-        {
             if (Config.UsingContactHomeSensor && HomeSensor is TimeBasedHomeSensor)
             {
                 throw new InvalidOperationException("The time based home sensor cannot act as a contact home sensor. If the time based home sensor is used, please set option UseContactHomeSensor to false.");
@@ -161,7 +155,7 @@ namespace MowControl
             {
                 while (true)
                 {
-                    CheckAndAct();
+                    await CheckAndActAsync();
                     Thread.Sleep(60000);
                 }
             }
@@ -356,6 +350,15 @@ namespace MowControl
 
                 return safelyAfterIntervalEnd;
             }
+        }
+
+        /// <summary>
+        /// Kollar om strömmen ska slås på eller av och gör det i sådana fall.
+        /// </summary>
+        public async Task CheckAndActAsync()
+        {
+            await Task.Yield();
+            CheckAndAct();
         }
 
         /// <summary>
