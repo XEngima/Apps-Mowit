@@ -7,11 +7,11 @@ namespace MowControl
 {
     public class SmhiRainSensor : IRainSensor
     {
-        private Smhi _smhi;
+        private ISmhi _smhi;
         private DateTime _lastRainTime;
         private decimal _lastRainIntensity;
 
-        public SmhiRainSensor(Smhi smhi)
+        public SmhiRainSensor(ISmhi smhi)
         {
             _smhi = smhi;
             _lastRainTime = DateTime.MinValue;
