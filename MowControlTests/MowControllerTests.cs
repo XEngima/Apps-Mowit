@@ -920,6 +920,34 @@ namespace MowerTests
         }
 
         [TestMethod]
+        public void CheckAndAct_PowerStatusUnknownBadWeatherAheadBetweenIntervalsAndNotHome_LogMessageWritten()
+        {
+            // Arrange
+            var config = TestFactory.NewConfig3To10And16To2300(
+                usingContactHomeSensor: true,
+                maxMowingWithoutCharge: 2);
+            var systemTime = new TestSystemTime(2018, 7, 24, 2, 30);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.Unknown);
+            var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime, isHome: false);
+            var logger = TestFactory.NewMowLogger(systemTime.Now);
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOn || x.Type == LogType.PowerOff).ToList();
+
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
+            Assert.AreEqual(1, logItems.Count);
+
+            Assert.AreEqual(LogType.PowerOn, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 02:30", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+        }
+
+        [TestMethod]
         public void CheckAndAct_MowIntervalStarts_LogMessageWritten()
         {
             // Arrange
@@ -1152,7 +1180,7 @@ namespace MowerTests
         }
 
         [TestMethod]
-        public void CheckAndAct_Rain_WaitingForDryUpBeforeStart()
+        public void CheckAndAct_WetAfterRain_WaitingForDryUpBeforeStart()
         {
             // Arrange
             var systemTime = new TestSystemTime(2018, 7, 24, 6, 0);
@@ -1164,7 +1192,29 @@ namespace MowerTests
             var rainSensor = new TestRainSensor(isWet: true);
             var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
-            weatherForecast.SetLastRainTime(new DateTime(2018, 7, 24, 5, 0, 0));
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.Off);
+            Assert.AreEqual(0, powerSwitch.TurnOns);
+            Assert.AreEqual(0, powerSwitch.TurnOffs);
+        }
+
+        [TestMethod]
+        public void CheckAndAct_WetButMowingInGoodForecast_TurnOff()
+        {
+            // Arrange
+            var systemTime = new TestSystemTime(2018, 7, 24, 10, 0);
+            var config = TestFactory.NewConfig6To12And18To2359(usingContactHomeSensor: true);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime,
+                isHome: true, 
+                mowerCameTime: new DateTime(2018, 7, 24, 9, 20, 0));
+            var logger = TestFactory.NewMowLogger(systemTime.Now);
+            var rainSensor = new TestRainSensor(isWet: true);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
             mowController.CheckAndAct();
@@ -1173,6 +1223,18 @@ namespace MowerTests
             Assert.AreEqual(powerSwitch.Status, PowerStatus.Off);
             Assert.AreEqual(0, powerSwitch.TurnOns);
             Assert.AreEqual(1, powerSwitch.TurnOffs);
+
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOff || x.Type == LogType.PowerOn).ToList();
+
+            Assert.AreEqual(1, logItems.Count);
+            Assert.AreEqual(LogType.PowerOff, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 10:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+
+            logItems = logger.LogItems.Where(x => x.Type == LogType.MowingStarted || x.Type == LogType.MowingEnded).ToList();
+
+            Assert.AreEqual(1, logItems.Count);
+            Assert.AreEqual(LogType.MowingEnded, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 10:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
         }
     }
 }

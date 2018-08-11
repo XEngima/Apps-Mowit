@@ -474,9 +474,9 @@ namespace MowControl
                     }
                 }
 
-                // If power is turned off
+                // Turn on power
 
-                if (PowerSwitch.Status != PowerStatus.On)
+                if (PowerSwitch.Status != PowerStatus.On && !RainSensor.IsWet)
                 {
                     foreach (var interval in Config.TimeIntervals)
                     {
@@ -513,14 +513,14 @@ namespace MowControl
                         }
                     }
 
-                    if (BetweenIntervals && HomeSensor.IsHome && !RightBeforeIntervalStarts && SafelyAfterIntervalEnd)
+                    if (BetweenIntervals && !RightBeforeIntervalStarts && SafelyAfterIntervalEnd)
                     {
                         PowerSwitch.TurnOn();
                         Logger.Write(iterationTime, LogType.PowerOn, "Power was turned on. In between intervals.");
                     }
                 }
 
-                // If power is turned on
+                // Turn off power
 
                 if (PowerSwitch.Status != PowerStatus.Off)
                 {
@@ -544,13 +544,18 @@ namespace MowControl
 
                         if (minutesLeftToIntervalStart <= 5 || !BetweenIntervals && HomeSensor.IsHome && (iterationTime - HomeSensor.MowerCameTime).TotalMinutes >= 30 || PowerSwitch.Status == PowerStatus.Unknown)
                         {
-                            string weatherAheadDescription;
-                            bool weatherWillBeGood = WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out weatherAheadDescription);
+                            string logMessage;
+                            bool weatherWillBeGood = WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out logMessage);
 
-                            if (!weatherWillBeGood)
+                            if (RainSensor.IsWet)
+                            {
+                                logMessage = "Grass is wet.";
+                            }
+
+                            if (RainSensor.IsWet || !weatherWillBeGood)
                             {
                                 PowerSwitch.TurnOff();
-                                Logger.Write(iterationTime, LogType.PowerOff, "Power was turned off. " + weatherAheadDescription);
+                                Logger.Write(iterationTime, LogType.PowerOff, "Power was turned off. " + logMessage);
 
                                 if (!BetweenIntervals)
                                 {
