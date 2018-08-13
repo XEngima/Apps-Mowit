@@ -413,8 +413,8 @@ namespace MowerTests
             var logger = new MowLogger();
             var rainSensor = new TestRainSensor(isWet: false);
 
-            logger.Write(new DateTime(2018, 6, 26, 0, 0, 0), LogType.MowControllerStarted, "Mow controller started.");
-            logger.Write(new DateTime(2018, 6, 26, 6, 0, 0), LogType.PowerOn, "Power was turned on.");
+            logger.Write(new DateTime(2018, 6, 26, 0, 0, 0), LogType.MowControllerStarted, LogLevel.InfoMoreInteresting, "Mow controller started.");
+            logger.Write(new DateTime(2018, 6, 26, 6, 0, 0), LogType.PowerOn, LogLevel.Info, "Power was turned on.");
 
             var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
@@ -450,8 +450,8 @@ namespace MowerTests
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
 
             var logger = new MowLogger();
-            logger.Write(new DateTime(2018, 06, 25, 0, 0, 0), LogType.MowControllerStarted, "");
-            logger.Write(new DateTime(2018, 06, 25, 0, 0, 0), LogType.PowerOn, "");
+            logger.Write(new DateTime(2018, 06, 25, 0, 0, 0), LogType.MowControllerStarted, LogLevel.InfoMoreInteresting, "");
+            logger.Write(new DateTime(2018, 06, 25, 0, 0, 0), LogType.PowerOn, LogLevel.Info, "");
 
             var rainSensor = new TestRainSensor(isWet: false);
             var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
@@ -1100,7 +1100,7 @@ namespace MowerTests
             var rainSensor = new TestRainSensor(isWet: false);
             var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
-            logger.Write(new DateTime(2018, 7, 24, 3, 30, 0), LogType.MowerLeft, "Mower left");
+            logger.Write(new DateTime(2018, 7, 24, 3, 30, 0), LogType.MowerLeft, LogLevel.Info, "Mower left");
 
             // Act
             mowController.CheckAndAct();

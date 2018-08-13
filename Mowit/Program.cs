@@ -70,18 +70,15 @@ namespace Mowit
             task.Wait();
         }
 
-        private static void Logger_LogItemWritten(object sender, EventArgs e)
+        private static void Logger_LogItemWritten(object sender, MowLoggerEventArgs e)
         {
-            var logger = sender as IMowLogger;
-            int index = logger.LogItems.Count - 1;
-
-            Console.WriteLine(logger.LogItems[index].Time.ToString("yyyy-MM-dd HH:mm") + " - " + logger.LogItems[index].Message);
+            Console.WriteLine(e.Item.Time.ToString("yyyy-MM-dd HH:mm") + " - " + e.Item.Message);
 
             try
             {
                 if (Config.EmailConfig.SendEmails)
                 {
-                    EmailSender.SendMail(logger.LogItems[index].Message, logger.LogItems[index].Time.ToString("yyyy-MM-dd HH:mm") + " - " + logger.LogItems[index].Message);
+                    EmailSender.SendMail(e.Item.Message, e.Item.Time.ToString("yyyy-MM-dd HH:mm") + " - " + e.Item.Message);
                 }
             }
             catch (Exception ex)

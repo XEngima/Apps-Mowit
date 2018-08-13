@@ -119,7 +119,7 @@ namespace MowerTests
         public static IMowLogger NewMowLogger(DateTime mowLoggerStartTime)
         {
             var logger = new MowLogger();
-            logger.Write(mowLoggerStartTime, LogType.MowControllerStarted, "Mow controller started.");
+            logger.Write(mowLoggerStartTime, LogType.MowControllerStarted, LogLevel.InfoMoreInteresting, "Mow controller started.");
             return logger;
         }
     }

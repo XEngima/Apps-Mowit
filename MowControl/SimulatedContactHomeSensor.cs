@@ -27,7 +27,7 @@ namespace MowControl
             StartAsync();
         }
 
-        public async Task StartAsync()
+        private async Task StartAsync()
         {
             await Task.Yield();
             Run();

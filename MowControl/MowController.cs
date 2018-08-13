@@ -13,7 +13,7 @@ namespace MowControl
     {
         private bool _mowerIsHome;
 
-        public static string Version { get { return "1.08"; } }
+        public static string Version { get { return "1.09"; } }
 
         public MowController(
             IMowControlConfig config,
@@ -148,7 +148,7 @@ namespace MowControl
                 throw new InvalidOperationException("The time based home sensor cannot act as a contact home sensor. If the time based home sensor is used, please set option UseContactHomeSensor to false.");
             }
 
-            Logger.Write(SystemTime.Now, LogType.MowControllerStarted, $"Mow Controller {Version} started.");
+            Logger.Write(SystemTime.Now, LogType.MowControllerStarted, LogLevel.InfoMoreInteresting, $"Mow Controller {Version} started.");
             _mowerIsHome = HomeSensor.IsHome;
 
             try
@@ -161,7 +161,7 @@ namespace MowControl
             }
             catch (Exception ex)
             {
-                Logger.Write(SystemTime.Now, LogType.Failure, ex.ToString());
+                Logger.Write(SystemTime.Now, LogType.Failure, LogLevel.Fatal, ex.ToString());
             }
         }
 
@@ -385,7 +385,7 @@ namespace MowControl
                 var startLogItem = Logger.LogItems.FirstOrDefault(x => x.Type == LogType.MowControllerStarted);
                 var todayStartTime = new DateTime(iterationTime.Year, iterationTime.Month, iterationTime.Day, 0, 0, 0);
 
-                if (startLogItem?.Time < todayStartTime)
+                if (startLogItem.Time < todayStartTime)
                 {
                     var yesterdayStartTime = new DateTime(iterationTime.Year, iterationTime.Month, iterationTime.Day, 0, 0, 0).AddDays(-1);
 
@@ -424,7 +424,7 @@ namespace MowControl
                         sb.Append(mowingTime.Minutes);
                         sb.AppendLine(" hours.");
 
-                        Logger.Write(iterationTime, LogType.DailyReport, sb.ToString());
+                        Logger.Write(iterationTime, LogType.DailyReport, LogLevel.InfoMoreInteresting, sb.ToString());
                     }
                 }
 
@@ -432,7 +432,7 @@ namespace MowControl
 
                 if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.StartHour == iterationTime.Hour && NextOrCurrentInterval.StartMin == iterationTime.Minute)
                 {
-                    Logger.Write(iterationTime, LogType.MowingStarted, "Mowing started.");
+                    Logger.Write(iterationTime, LogType.MowingStarted, LogLevel.InfoLessInteresting, "Mowing started.");
                 }
 
                 // Check if mower has entered or exited its home since last time
@@ -443,11 +443,11 @@ namespace MowControl
 
                     if (_mowerIsHome)
                     {
-                        Logger.Write(iterationTime, LogType.MowerCame, "Mower came.");
+                        Logger.Write(iterationTime, LogType.MowerCame, LogLevel.Info, "Mower came.");
                     }
                     else
                     {
-                        Logger.Write(iterationTime, LogType.MowerLeft, "Mower left.");
+                        Logger.Write(iterationTime, LogType.MowerLeft, LogLevel.Info, "Mower left.");
                     }
                 }
 
@@ -465,11 +465,11 @@ namespace MowControl
 
                     if (lastMowerLeftLogItem?.Time.AddHours(Config.MaxMowingHoursWithoutCharge) <= iterationTime && lastLogItem?.Type != LogType.MowerLost)
                     {
-                        Logger.Write(iterationTime, LogType.MowerLost, $"Mower seems to be lost. It did not return home after {Config.MaxMowingHoursWithoutCharge} hours as expected.");
+                        Logger.Write(iterationTime, LogType.MowerLost, LogLevel.InfoMoreInteresting, $"Mower seems to be lost. It did not return home after {Config.MaxMowingHoursWithoutCharge} hours as expected.");
 
                         if (!BetweenIntervals)
                         {
-                            Logger.Write(iterationTime, LogType.MowingEnded, "Mowing ended.");
+                            Logger.Write(iterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
                         }
                     }
                 }
@@ -502,11 +502,11 @@ namespace MowControl
                                 if (weatherWillBeGood && mowingNecessary)
                                 {
                                     PowerSwitch.TurnOn();
-                                    Logger.Write(iterationTime, LogType.PowerOn, "Power was turned on. " + weatherAheadDescription);
+                                    Logger.Write(iterationTime, LogType.PowerOn, LogLevel.Info, "Power was turned on. " + weatherAheadDescription);
 
                                     if (!BetweenIntervals)
                                     {
-                                        Logger.Write(iterationTime, LogType.MowingStarted, "Mowing started.");
+                                        Logger.Write(iterationTime, LogType.MowingStarted, LogLevel.InfoLessInteresting, "Mowing started.");
                                     }
                                 }
                             }
@@ -516,7 +516,7 @@ namespace MowControl
                     if (BetweenIntervals && !RightBeforeIntervalStarts && SafelyAfterIntervalEnd)
                     {
                         PowerSwitch.TurnOn();
-                        Logger.Write(iterationTime, LogType.PowerOn, "Power was turned on. In between intervals.");
+                        Logger.Write(iterationTime, LogType.PowerOn, LogLevel.Info, "Power was turned on. In between intervals.");
                     }
                 }
 
@@ -555,11 +555,11 @@ namespace MowControl
                             if (RainSensor.IsWet || !weatherWillBeGood)
                             {
                                 PowerSwitch.TurnOff();
-                                Logger.Write(iterationTime, LogType.PowerOff, "Power was turned off. " + logMessage);
+                                Logger.Write(iterationTime, LogType.PowerOff, LogLevel.Info, "Power was turned off. " + logMessage);
 
                                 if (!BetweenIntervals)
                                 {
-                                    Logger.Write(iterationTime, LogType.MowingEnded, "Mowing ended.");
+                                    Logger.Write(iterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
                                 }
                             }
 
@@ -567,11 +567,11 @@ namespace MowControl
                             if (!MowingNecessary())
                             {
                                 PowerSwitch.TurnOff();
-                                Logger.Write(iterationTime, LogType.PowerOff, "Power was turned off. Mowing not necessary.");
+                                Logger.Write(iterationTime, LogType.PowerOff, LogLevel.Info, "Power was turned off. Mowing not necessary.");
 
                                 if (!BetweenIntervals)
                                 {
-                                    Logger.Write(iterationTime, LogType.MowingEnded, "Mowing ended.");
+                                    Logger.Write(iterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
                                 }
                             }
                         }
@@ -582,7 +582,7 @@ namespace MowControl
 
                 if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.EndHour == iterationTime.Hour && NextOrCurrentInterval.EndMin == iterationTime.Minute)
                 {
-                    Logger.Write(iterationTime, LogType.MowingEnded, "Mowing ended.");
+                    Logger.Write(iterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
                 }
             }
             catch (Exception ex)
@@ -596,7 +596,7 @@ namespace MowControl
 
                 if (ex.Message != lastMsg)
                 {
-                    Logger.Write(SystemTime.Now, LogType.Failure, ex.Message);
+                    Logger.Write(SystemTime.Now, LogType.Failure, LogLevel.Error, ex.Message);
                 }
             }
         }

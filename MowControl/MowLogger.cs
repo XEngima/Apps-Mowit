@@ -14,17 +14,18 @@ namespace MowControl
 
         public IList<LogItem> LogItems { get; private set; }
 
-        public event EventHandler LogItemWritten;
+        public event MowLoggerEventHandler LogItemWritten;
 
-        public void Write(DateTime time, LogType type, string message)
+        public void Write(DateTime time, LogType type, LogLevel level, string message)
         {
-            LogItems.Add(new LogItem(time, type, message));
-            OnLogItemWritten();
+            var item = new LogItem(time, type, level, message);
+            LogItems.Add(item);
+            OnLogItemWritten(item);
         }
 
-        private void OnLogItemWritten()
+        private void OnLogItemWritten(LogItem item)
         {
-            LogItemWritten?.Invoke(this, new EventArgs());
+            LogItemWritten?.Invoke(this, new MowLoggerEventArgs(item));
         }
     }
 }

@@ -6,9 +6,9 @@ namespace MowControl
 {
     public interface IMowLogger
     {
-        event EventHandler LogItemWritten;
+        event MowLoggerEventHandler LogItemWritten;
 
-        void Write(DateTime time, LogType type, string message);
+        void Write(DateTime time, LogType type, LogLevel level, string message);
 
         IList<LogItem> LogItems { get; }
     }
