@@ -29,12 +29,6 @@ namespace MowControl
 
         private async Task StartAsync()
         {
-            await Task.Yield();
-            Run();
-        }
-
-        private void Run()
-        {
             while (true)
             {
                 // First, add a new weather time serie to the list of historic weather.
@@ -73,7 +67,7 @@ namespace MowControl
                 IsWet = !isDry;
 
                 // Wait for 15 minutes
-                Thread.Sleep(15 * 60 * 1000);
+                await Task.Delay(15 * 60 * 1000);
             }
         }
     }

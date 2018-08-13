@@ -12,11 +12,13 @@ namespace MowerTests
     public class SmhiRainSensorTests
     {
         [TestMethod]
-        public void IsWet_RainAnHourAgo_Wet()
+        public void IsWet_CurrentlyRaining_Wet()
         {
             var systemTime = new TestSystemTime(2018, 8, 13, 8, 0);
-            var smhi = new TestSmhi(systemTime, new ForecastTimeSerie[] {
-                new ForecastTimeSerie() { validTime = new DateTime(2018, 8, 13, 8, 0, 0) }
+
+            var smhi = new TestSmhi(systemTime, new ForecastTimeSerie[]
+            {
+                new ForecastTimeSerie().Seed(new DateTime(2018, 8, 13, 8, 0, 0), precipitationMax: 0.2m)
             });
 
             var rainSensor = new SmhiRainSensor(smhi);
@@ -24,7 +26,7 @@ namespace MowerTests
             // Act
             bool isWet = rainSensor.IsWet;
 
-            Assert.IsFalse(isWet);
+            Assert.IsTrue(isWet);
         }
     }
 }
