@@ -13,7 +13,7 @@ namespace MowControl
     {
         private bool _mowerIsHome;
 
-        public static string Version { get { return "1.09"; } }
+        public static string Version { get { return "1.11"; } }
 
         public MowController(
             IMowControlConfig config,
@@ -562,7 +562,7 @@ namespace MowControl
                             string logMessage;
                             bool weatherWillBeGood = WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out logMessage);
 
-                            if (RainSensor.IsWet)
+                            if (weatherWillBeGood && RainSensor.IsWet)
                             {
                                 logMessage = "Grass is wet.";
                             }
