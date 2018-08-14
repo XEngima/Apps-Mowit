@@ -380,6 +380,21 @@ namespace MowControl
 
             try
             {
+                // Write the hourly report log item
+
+                if (SystemTime.Now.Minute == 0)
+                {
+                    var hourlyReportItem = Logger.LogItems.OrderByDescending(r => r.Time).FirstOrDefault(x => x.Type == LogType.HourlyReport);
+
+                    if (hourlyReportItem == null || hourlyReportItem.Time.ToString("yyyy-MM-dd HH:mm") != iterationTime.ToString("yyyy-MM-dd HH:mm"))
+                    {
+                        int wetness = RainSensor is SmhiRainSensor ? ((SmhiRainSensor)RainSensor).Wetness : 0;
+                        string weatherAheadDescription;
+                        WeatherForecast.CheckIfWeatherWillBeGood(12, out weatherAheadDescription);
+                        Logger.Write(SystemTime.Now, LogType.HourlyReport, LogLevel.InfoLessInteresting, "Hourly report: " + weatherAheadDescription + " Current wetness: " + wetness);
+                   }
+                }
+
                 // If a report was not made for yesterday, and if mowing started yesterday or before, create a report.
 
                 var startLogItem = Logger.LogItems.FirstOrDefault(x => x.Type == LogType.MowControllerStarted);
@@ -389,7 +404,7 @@ namespace MowControl
                 {
                     var yesterdayStartTime = new DateTime(iterationTime.Year, iterationTime.Month, iterationTime.Day, 0, 0, 0).AddDays(-1);
 
-                    var reportLogItem = Logger.LogItems.FirstOrDefault(x => x.Type == LogType.DailyReport && x.Time >= yesterdayStartTime && x.Time < todayStartTime);
+                    var reportLogItem = Logger.LogItems.FirstOrDefault(x => x.Type == LogType.DailyReport && x.Time >= todayStartTime && x.Time < todayStartTime.AddDays(1));
 
                     if (reportLogItem == null)
                     {

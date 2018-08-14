@@ -64,7 +64,7 @@ namespace Mowit
 
             logger.LogItemWritten += Logger_LogItemWritten;
 
-            var rainSensor = new SmhiRainSensor(smhi);
+            var rainSensor = new SmhiRainSensor(systemTime, smhi);
             var mowController = new MowController(Config.MowControlConfig, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
             var task = mowController.StartAsync();
             task.Wait();

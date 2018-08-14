@@ -1162,9 +1162,9 @@ namespace MowerTests
             RunOverTime(mowController, systemTime, 14, 5);
 
             // Assert
-            var daySummaryItem = logger.LogItems.FirstOrDefault(x => x.Type == LogType.DailyReport);
+            var daySummaryItems = logger.LogItems.Where(x => x.Type == LogType.DailyReport).ToList();
 
-            Assert.IsNotNull(daySummaryItem);
+            Assert.AreEqual(1, daySummaryItems.Count);
 
             string expected = @"Mowing Summary 2018-07-24
 
@@ -1176,7 +1176,7 @@ namespace MowerTests
                               Total mowed: 11:59 hours.
                               ".Replace(" ", "");
 
-            string actual = daySummaryItem.Message.Replace(" ", "");
+            string actual = daySummaryItems[0].Message.Replace(" ", "");
 
             Assert.AreEqual(expected, actual);
         }

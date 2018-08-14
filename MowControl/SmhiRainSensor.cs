@@ -12,20 +12,48 @@ namespace MowControl
     {
         private ISmhi _smhi;
         private List<ForecastTimeSerie> _weatherTimeSeries;
+        private ISystemTime _systemTime;
 
-        public SmhiRainSensor(ISmhi smhi)
+        public SmhiRainSensor(ISystemTime systemTime, ISmhi smhi, params ForecastTimeSerie[] seededWeatherTimeSeries)
         {
+            _systemTime = systemTime;
             _smhi = smhi;
             IsWet = false;
             _weatherTimeSeries = new List<ForecastTimeSerie>();
+            Seed(seededWeatherTimeSeries);
 
             StartAsync();
+        }
+
+        /// <summary>
+        /// Seeds the rain sensor with historic data to be used for taking decisions. If this is not used, the rain sensor will assume 
+        /// dry surface and start building the weather history from the current time.
+        /// </summary>
+        /// <param name="historicWeatherTimeSeries"></param>
+        public void Seed(params ForecastTimeSerie[] historicWeatherTimeSeries)
+        {
+            foreach (var timeSerie in historicWeatherTimeSeries)
+            {
+                var alreadyExistingTimeSerie = _weatherTimeSeries.FirstOrDefault(ts => ts.validTime == timeSerie.validTime);
+
+                if (alreadyExistingTimeSerie != null)
+                {
+                    throw new ArgumentException("The list of historic weather time series will contain doubles.");
+                }
+
+                _weatherTimeSeries.Add(timeSerie);
+            }
         }
 
         public bool IsWet
         {
             get; private set;
         }
+
+        /// <summary>
+        /// Gets or sets the wetness in percent. 0 is dry, 100 is as wet as it can be.
+        /// </summary>
+        public int Wetness { get; private set; }
 
         private async Task StartAsync()
         {
@@ -43,28 +71,32 @@ namespace MowControl
                 }
 
                 decimal currentPrecipitation = Math.Max(currentWeather.PrecipitationMax, currentWeather.PrecipitationMin);
-                int currentHumidity = currentWeather.RelativeHumidity;
 
-                // Let it be dry if it has now rained for two hours.
+                // Calculate the wetness
 
-                int i = 0;
-                bool isDry = true;
-                foreach (var timeSerie in _weatherTimeSeries.OrderByDescending(ts => ts.validTime))
+                int wetness = Convert.ToInt32(currentPrecipitation * 100);
+
+                foreach (var timeSerie in _weatherTimeSeries.Where(ts => ts.validTime > _systemTime.Now.ToUniversalTime().AddDays(-1)).OrderBy(ts => ts.validTime))
                 {
                     decimal precipitation = Math.Max(timeSerie.PrecipitationMin, timeSerie.PrecipitationMax);
 
-                    if (precipitation > 0)
+                    // If it's raining, increase the wetness
+                    wetness += Convert.ToInt32(precipitation * 100);
+
+                    if (wetness > 100)
                     {
-                        isDry = false;
+                        wetness = 100;
                     }
 
-                    if (i >= 3)
+                    // If it's not raining, decrease wetness in relation to relative humidity
+                    if (precipitation == 0)
                     {
-                        break;
+                        wetness -= timeSerie.RelativeHumidity / 2;
                     }
                 }
 
-                IsWet = !isDry;
+                Wetness = wetness;
+                IsWet = Wetness > 0;
 
                 // Wait for 15 minutes
                 await Task.Delay(15 * 60 * 1000);
