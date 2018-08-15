@@ -91,7 +91,12 @@ namespace MowControl
                     // If it's not raining, decrease wetness in relation to relative humidity
                     if (precipitation == 0)
                     {
-                        wetness -= timeSerie.RelativeHumidity / 2;
+                        wetness -= (100 - timeSerie.RelativeHumidity) / 2;
+                    }
+
+                    if (wetness < 0)
+                    {
+                        wetness = 0;
                     }
                 }
 
