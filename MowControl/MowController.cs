@@ -302,7 +302,7 @@ namespace MowControl
                 foreach (var interval in Config.TimeIntervals)
                 {
                     // Om ett intervall håller på
-                    if (interval.ContainsTime(SystemTime.Now))
+                    if (interval.ContainsTime(IterationTime))
                     {
                         betweenIntervals = false;
                     }
@@ -311,6 +311,8 @@ namespace MowControl
                 return betweenIntervals;
             }
         }
+
+        private DateTime IterationTime { get; set; }
 
         /// <summary>
         /// Get whether the time is right before an interval starts or not.
@@ -321,7 +323,7 @@ namespace MowControl
             {
                 bool rightBeforeIntervalStart = false;
 
-                rightBeforeIntervalStart = SystemTime.Now >= NextIntervalStartTime.AddMinutes(-5);
+                rightBeforeIntervalStart = IterationTime >= NextIntervalStartTime.AddMinutes(-5);
 
                 return rightBeforeIntervalStart;
             }
@@ -338,14 +340,14 @@ namespace MowControl
 
                 if (BetweenIntervals)
                 {
-                    DateTime minutesFromEnd = (new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, PrevInterval.EndHour, PrevInterval.EndMin, 0).AddMinutes(5));
+                    DateTime minutesFromEnd = (new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, PrevInterval.EndHour, PrevInterval.EndMin, 0).AddMinutes(5));
 
-                    if (PrevInterval.StartHour > SystemTime.Now.Hour || PrevInterval.StartHour == SystemTime.Now.Hour && PrevInterval.StartMin > SystemTime.Now.Minute)
+                    if (PrevInterval.StartHour > IterationTime.Hour || PrevInterval.StartHour == IterationTime.Hour && PrevInterval.StartMin > IterationTime.Minute)
                     {
                         minutesFromEnd = minutesFromEnd.AddDays(-1);
                     }
 
-                    safelyAfterIntervalEnd = SystemTime.Now >= minutesFromEnd;
+                    safelyAfterIntervalEnd = IterationTime >= minutesFromEnd;
                 }
 
                 return safelyAfterIntervalEnd;
@@ -371,7 +373,7 @@ namespace MowControl
             //    int debug = 0;
             //}
 
-            var iterationTime = SystemTime.Now;
+            IterationTime = SystemTime.Now;
 
             if (Config.TimeIntervals == null)
             {
@@ -382,27 +384,27 @@ namespace MowControl
             {
                 // Write the hourly report log item
 
-                if (SystemTime.Now.Minute == 0)
+                if (IterationTime.Minute == 0)
                 {
                     var hourlyReportItem = Logger.LogItems.OrderByDescending(r => r.Time).FirstOrDefault(x => x.Type == LogType.HourlyReport);
 
-                    if (hourlyReportItem == null || hourlyReportItem.Time.ToString("yyyy-MM-dd HH:mm") != iterationTime.ToString("yyyy-MM-dd HH:mm"))
+                    if (hourlyReportItem == null || hourlyReportItem.Time.ToString("yyyy-MM-dd HH:mm") != IterationTime.ToString("yyyy-MM-dd HH:mm"))
                     {
                         int wetness = RainSensor is SmhiRainSensor ? ((SmhiRainSensor)RainSensor).Wetness : 0;
                         string weatherAheadDescription;
                         WeatherForecast.CheckIfWeatherWillBeGood(12, out weatherAheadDescription);
-                        Logger.Write(SystemTime.Now, LogType.HourlyReport, LogLevel.InfoLessInteresting, "Hourly report: " + weatherAheadDescription + " Current wetness: " + wetness);
+                        Logger.Write(IterationTime, LogType.HourlyReport, LogLevel.InfoLessInteresting, "Hourly report: " + weatherAheadDescription + " Current wetness: " + wetness);
                    }
                 }
 
                 // If a report was not made for yesterday, and if mowing started yesterday or before, create a report.
 
                 var startLogItem = Logger.LogItems.FirstOrDefault(x => x.Type == LogType.MowControllerStarted);
-                var todayStartTime = new DateTime(iterationTime.Year, iterationTime.Month, iterationTime.Day, 0, 0, 0);
+                var todayStartTime = new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, 0, 0, 0);
 
                 if (startLogItem.Time < todayStartTime)
                 {
-                    var yesterdayStartTime = new DateTime(iterationTime.Year, iterationTime.Month, iterationTime.Day, 0, 0, 0).AddDays(-1);
+                    var yesterdayStartTime = new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, 0, 0, 0).AddDays(-1);
 
                     var reportLogItem = Logger.LogItems.FirstOrDefault(x => x.Type == LogType.DailyReport && x.Time >= todayStartTime && x.Time < todayStartTime.AddDays(1));
 
@@ -439,15 +441,15 @@ namespace MowControl
                         sb.Append(mowingTime.Minutes);
                         sb.AppendLine(" hours.");
 
-                        Logger.Write(iterationTime, LogType.DailyReport, LogLevel.InfoMoreInteresting, sb.ToString());
+                        Logger.Write(IterationTime, LogType.DailyReport, LogLevel.InfoMoreInteresting, sb.ToString());
                     }
                 }
 
                 // Check if there has ocurred an interval start, and in case it has, write a log message
 
-                if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.StartHour == iterationTime.Hour && NextOrCurrentInterval.StartMin == iterationTime.Minute)
+                if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.StartHour == IterationTime.Hour && NextOrCurrentInterval.StartMin == IterationTime.Minute)
                 {
-                    Logger.Write(iterationTime, LogType.MowingStarted, LogLevel.InfoLessInteresting, "Mowing started.");
+                    Logger.Write(IterationTime, LogType.MowingStarted, LogLevel.InfoLessInteresting, "Mowing started.");
                 }
 
                 // Check if mower has entered or exited its home since last time
@@ -458,11 +460,11 @@ namespace MowControl
 
                     if (_mowerIsHome)
                     {
-                        Logger.Write(iterationTime, LogType.MowerCame, LogLevel.Info, "Mower came.");
+                        Logger.Write(IterationTime, LogType.MowerCame, LogLevel.Info, "Mower came.");
                     }
                     else
                     {
-                        Logger.Write(iterationTime, LogType.MowerLeft, LogLevel.Info, "Mower left.");
+                        Logger.Write(IterationTime, LogType.MowerLeft, LogLevel.Info, "Mower left.");
                     }
                 }
 
@@ -478,13 +480,13 @@ namespace MowControl
                         .OrderByDescending(x => x.Time)
                         .FirstOrDefault(x => x.Type == LogType.MowerLost || x.Type == LogType.MowerCame);
 
-                    if (lastMowerLeftLogItem?.Time.AddHours(Config.MaxMowingHoursWithoutCharge) <= iterationTime && lastLogItem?.Type != LogType.MowerLost)
+                    if (lastMowerLeftLogItem?.Time.AddHours(Config.MaxMowingHoursWithoutCharge) <= IterationTime && lastLogItem?.Type != LogType.MowerLost)
                     {
-                        Logger.Write(iterationTime, LogType.MowerLost, LogLevel.InfoMoreInteresting, $"Mower seems to be lost. It did not return home after {Config.MaxMowingHoursWithoutCharge} hours as expected.");
+                        Logger.Write(IterationTime, LogType.MowerLost, LogLevel.InfoMoreInteresting, $"Mower seems to be lost. It did not return home after {Config.MaxMowingHoursWithoutCharge} hours as expected.");
 
                         if (!BetweenIntervals)
                         {
-                            Logger.Write(iterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
+                            Logger.Write(IterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
                         }
                     }
                 }
@@ -496,14 +498,14 @@ namespace MowControl
                     foreach (var interval in Config.TimeIntervals)
                     {
                         // Om ett intervall håller på
-                        if (interval.ContainsTime(iterationTime))
+                        if (interval.ContainsTime(IterationTime))
                         {
-                            DateTime minutesFromEnd = (new DateTime(iterationTime.Year, iterationTime.Month, iterationTime.Day, interval.EndHour, interval.EndMin, 0).AddMinutes(-10));
+                            DateTime minutesFromEnd = (new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, interval.EndHour, interval.EndMin, 0).AddMinutes(-10));
 
                             // If the interval is not close to end
-                            if (iterationTime < minutesFromEnd)
+                            if (IterationTime < minutesFromEnd)
                             {
-                                int forecastHours = interval.EndHour - iterationTime.Hour + 2;
+                                int forecastHours = interval.EndHour - IterationTime.Hour + 2;
 
                                 if (Config.UsingContactHomeSensor)
                                 {
@@ -517,11 +519,11 @@ namespace MowControl
                                 if (weatherWillBeGood && mowingNecessary)
                                 {
                                     PowerSwitch.TurnOn();
-                                    Logger.Write(iterationTime, LogType.PowerOn, LogLevel.Info, "Power was turned on. " + weatherAheadDescription);
+                                    Logger.Write(IterationTime, LogType.PowerOn, LogLevel.Info, "Power was turned on. " + weatherAheadDescription);
 
                                     if (!BetweenIntervals)
                                     {
-                                        Logger.Write(iterationTime, LogType.MowingStarted, LogLevel.InfoLessInteresting, "Mowing started.");
+                                        Logger.Write(IterationTime, LogType.MowingStarted, LogLevel.InfoLessInteresting, "Mowing started.");
                                     }
                                 }
                             }
@@ -531,7 +533,7 @@ namespace MowControl
                     if (BetweenIntervals && !RightBeforeIntervalStarts && SafelyAfterIntervalEnd)
                     {
                         PowerSwitch.TurnOn();
-                        Logger.Write(iterationTime, LogType.PowerOn, LogLevel.Info, "Power was turned on. In between intervals.");
+                        Logger.Write(IterationTime, LogType.PowerOn, LogLevel.Info, "Power was turned on. In between intervals.");
                     }
                 }
 
@@ -541,12 +543,12 @@ namespace MowControl
                 {
                     if (HomeSensor.IsHome) // TODO: Fel i TimeBasedHomeSensor när kraften är Unknown...
                     {
-                        DateTime nextIntervalExactStartTime = new DateTime(iterationTime.Year, iterationTime.Month, iterationTime.Day, NextInterval.StartHour, NextInterval.StartMin, 0);
-                        if (nextIntervalExactStartTime < iterationTime)
+                        DateTime nextIntervalExactStartTime = new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, NextInterval.StartHour, NextInterval.StartMin, 0);
+                        if (nextIntervalExactStartTime < IterationTime)
                         {
                             nextIntervalExactStartTime = nextIntervalExactStartTime.AddDays(1);
                         }
-                        double minutesLeftToIntervalStart = (nextIntervalExactStartTime - iterationTime).TotalMinutes;
+                        double minutesLeftToIntervalStart = (nextIntervalExactStartTime - IterationTime).TotalMinutes;
 
                         // If there will be rain, turn off power
                         int forecastHours = NextInterval.ToTimeSpan().Hours + 2;
@@ -557,7 +559,7 @@ namespace MowControl
                             forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
                         }
 
-                        if (minutesLeftToIntervalStart <= 5 || !BetweenIntervals && HomeSensor.IsHome && (iterationTime - HomeSensor.MowerCameTime).TotalMinutes >= 30 || PowerSwitch.Status == PowerStatus.Unknown)
+                        if (minutesLeftToIntervalStart <= 5 || !BetweenIntervals && HomeSensor.IsHome && (IterationTime - HomeSensor.MowerCameTime).TotalMinutes >= 30 || PowerSwitch.Status == PowerStatus.Unknown)
                         {
                             string logMessage;
                             bool weatherWillBeGood = WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out logMessage);
@@ -570,11 +572,11 @@ namespace MowControl
                             if (RainSensor.IsWet || !weatherWillBeGood)
                             {
                                 PowerSwitch.TurnOff();
-                                Logger.Write(iterationTime, LogType.PowerOff, LogLevel.Info, "Power was turned off. " + logMessage);
+                                Logger.Write(IterationTime, LogType.PowerOff, LogLevel.Info, "Power was turned off. " + logMessage);
 
                                 if (!BetweenIntervals)
                                 {
-                                    Logger.Write(iterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
+                                    Logger.Write(IterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
                                 }
                             }
 
@@ -582,22 +584,22 @@ namespace MowControl
                             if (!MowingNecessary())
                             {
                                 PowerSwitch.TurnOff();
-                                Logger.Write(iterationTime, LogType.PowerOff, LogLevel.Info, "Power was turned off. Mowing not necessary.");
+                                Logger.Write(IterationTime, LogType.PowerOff, LogLevel.Info, "Power was turned off. Mowing not necessary.");
 
                                 if (!BetweenIntervals)
                                 {
-                                    Logger.Write(iterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
+                                    Logger.Write(IterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
                                 }
                             }
                         }
                     }
                 }
 
-                // Check if there has ocurred an interval end, and in case it has, write a log message
+                // Check if we're at an interval end, and in case we are, write a log message
 
-                if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.EndHour == iterationTime.Hour && NextOrCurrentInterval.EndMin == iterationTime.Minute)
+                if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.EndHour == IterationTime.Hour && NextOrCurrentInterval.EndMin == IterationTime.Minute)
                 {
-                    Logger.Write(iterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
+                    Logger.Write(IterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
                 }
             }
             catch (Exception ex)
@@ -611,7 +613,7 @@ namespace MowControl
 
                 if (ex.Message != lastMsg)
                 {
-                    Logger.Write(SystemTime.Now, LogType.Failure, LogLevel.Error, ex.Message);
+                    Logger.Write(IterationTime, LogType.Failure, LogLevel.Error, ex.Message);
                 }
             }
         }
