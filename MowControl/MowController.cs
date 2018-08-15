@@ -449,7 +449,7 @@ namespace MowControl
 
                 if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.StartHour == IterationTime.Hour && NextOrCurrentInterval.StartMin == IterationTime.Minute)
                 {
-                    Logger.Write(IterationTime, LogType.MowingStarted, LogLevel.InfoLessInteresting, "Mowing started.");
+                    SetMowingStarted();
                 }
 
                 // Check if mower has entered or exited its home since last time
@@ -461,6 +461,7 @@ namespace MowControl
                     if (_mowerIsHome)
                     {
                         Logger.Write(IterationTime, LogType.MowerCame, LogLevel.Info, "Mower came.");
+                        SetMowingStarted();
                     }
                     else
                     {
@@ -520,11 +521,7 @@ namespace MowControl
                                 {
                                     PowerSwitch.TurnOn();
                                     Logger.Write(IterationTime, LogType.PowerOn, LogLevel.Info, "Power was turned on. " + weatherAheadDescription);
-
-                                    if (!BetweenIntervals)
-                                    {
-                                        Logger.Write(IterationTime, LogType.MowingStarted, LogLevel.InfoLessInteresting, "Mowing started.");
-                                    }
+                                    SetMowingStarted();
                                 }
                             }
                         }
@@ -616,6 +613,24 @@ namespace MowControl
                     Logger.Write(IterationTime, LogType.Failure, LogLevel.Error, ex.Message);
                 }
             }
+        }
+
+        private void SetMowingStarted()
+        {
+            if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On)
+            {
+                // Check if last item as a MowinEnded item.
+                var logItems = Logger.LogItems
+                    .Where(x => x.Type == LogType.MowingStarted || x.Type == LogType.MowingEnded)
+                    .OrderByDescending(x => x.Time)
+                    .ToList();
+
+                if (logItems.Count == 0 || logItems[0].Type == LogType.MowingEnded)
+                {
+                    Logger.Write(IterationTime, LogType.MowingStarted, LogLevel.InfoLessInteresting, "Mowing started.");
+                }
+            }
+
         }
     }
 }

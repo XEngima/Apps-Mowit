@@ -13,10 +13,10 @@ namespace MowerTests
         {
             minutes = hours * 60 + minutes;
 
-            for (int i = 0; i < minutes; i++)
+            for (int i = 0; i < minutes * 2; i++)
             {
                 mowController.CheckAndAct();
-                systemTime.TickMinutes(1);
+                systemTime.TickSeconds(30);
             }
         }
 
@@ -602,9 +602,9 @@ namespace MowerTests
         public void CheckAndAct_ComingHome_LogMessageSaved()
         {
             // Arrange
+            var systemTime = new TestSystemTime(2018, 06, 24, 4, 30);
             var config = TestFactory.NewConfig3To10And16To2300();
             var powerSwitch = new TestPowerSwitch(isActive: true);
-            var systemTime = new TestSystemTime(2018, 06, 24, 4, 30);
 
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
 
@@ -615,10 +615,11 @@ namespace MowerTests
             var rainSensor = new TestRainSensor(isWet: false);
             var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
-            // Act
             mowController.CheckAndAct();
             systemTime.TickMinutes(1);
             homeSensor.SetIsHome(true);
+
+            // Act
             mowController.CheckAndAct();
 
             // Assert
@@ -626,9 +627,11 @@ namespace MowerTests
             Assert.AreEqual(0, powerSwitch.TurnOns);
             Assert.AreEqual(0, powerSwitch.TurnOffs);
 
-            Assert.AreEqual(2, logger.LogItems.Count);
-            Assert.AreEqual(LogType.MowerCame, logger.LogItems[1].Type);
-            Assert.AreEqual("2018-06-24 04:31", logger.LogItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowerCame).ToList().ToList();
+
+            Assert.AreEqual(1, logItems.Count);
+            Assert.AreEqual(LogType.MowerCame, logItems[0].Type);
+            Assert.AreEqual("2018-06-24 04:31", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
         }
 
         [TestMethod]
@@ -1112,6 +1115,41 @@ namespace MowerTests
             Assert.AreEqual(1, logItems.Count);
 
             Assert.AreEqual(LogType.MowingEnded, logItems[0].Type);
+            Assert.AreEqual("2018-07-24 05:30", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+        }
+
+        [TestMethod]
+        public void CheckAndAct_MowingStartsWhenMowerIsFound_LogMessageWritten()
+        {
+            // Arrange
+            var systemTime = new TestSystemTime(2018, 7, 24, 5, 30);
+            var config = TestFactory.NewConfig0To6And12To18(usingContactHomeSensor: true);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime,
+                isHome: false,
+                mowerLeftTime: new DateTime(2018, 7, 24, 2, 0, 0));
+            var logger = TestFactory.NewMowLogger(new DateTime(2018, 7, 24, 0, 0, 0));
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
+
+            logger.Write(new DateTime(2018, 7, 24, 2, 0, 0), LogType.MowerLeft, LogLevel.Info, "Mower left");
+            logger.Write(new DateTime(2018, 7, 24, 2, 0, 0), LogType.MowerLost, LogLevel.Info, "Mower lost");
+            logger.Write(new DateTime(2018, 7, 24, 2, 0, 0), LogType.MowingEnded, LogLevel.Info, "Mowing ended");
+
+            mowController.CheckAndAct();
+            homeSensor.SetIsHome(true);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowingStarted).ToList();
+
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
+            Assert.AreEqual(1, logItems.Count);
+
+            Assert.AreEqual(LogType.MowingStarted, logItems[0].Type);
             Assert.AreEqual("2018-07-24 05:30", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
         }
 

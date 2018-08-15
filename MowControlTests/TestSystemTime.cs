@@ -34,6 +34,11 @@ namespace MowerTests
             Now = Now.AddMinutes(minutes);
         }
 
+        public void TickSeconds(int seconds)
+        {
+            Now = Now.AddSeconds(seconds);
+        }
+
         public static DateTime DaysAgo(int daysAgo, int hour, int minute)
         {
             DateTime date = DateTime.Now.AddDays(-daysAgo);
