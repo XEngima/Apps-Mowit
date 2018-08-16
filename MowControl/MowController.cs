@@ -55,8 +55,8 @@ namespace MowControl
                     .OrderBy(i => i.StartHour)
                     .ThenBy(i => i.StartMin)
                     .FirstOrDefault(i =>
-                        i.StartHour > SystemTime.Now.Hour ||
-                        (i.StartHour == SystemTime.Now.Hour && i.StartMin >= SystemTime.Now.Minute));
+                        i.StartHour > IterationTime.Hour ||
+                        (i.StartHour == IterationTime.Hour && i.StartMin >= IterationTime.Minute));
 
                 // Om vi fick null betyder det att tiden passerat sista intervallet, och då blir nästa intervall 
                 // istället det första på dagen.
@@ -84,8 +84,8 @@ namespace MowControl
                     .OrderByDescending(i => i.StartHour)
                     .ThenByDescending(i => i.StartMin)
                     .FirstOrDefault(i =>
-                        i.StartHour < SystemTime.Now.Hour ||
-                        (i.StartHour == SystemTime.Now.Hour && i.StartMin <= SystemTime.Now.Minute));
+                        i.StartHour < IterationTime.Hour ||
+                        (i.StartHour == IterationTime.Hour && i.StartMin <= IterationTime.Minute));
 
                 // Om vi fick null betyder det att tiden passerat sista intervallet, och då blir föregående intervall 
                 // istället det sista på dagen.
@@ -111,10 +111,10 @@ namespace MowControl
                 // Kolla om vi är i ett intervall, och returnera det isf
                 foreach (var interval in Config.TimeIntervals)
                 {
-                    DateTime startTime = new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, interval.StartHour, interval.StartMin, 0);
-                    DateTime endTime = new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, interval.EndHour, interval.EndMin, 0);
+                    DateTime startTime = new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, interval.StartHour, interval.StartMin, 0);
+                    DateTime endTime = new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, interval.EndHour, interval.EndMin, 0);
 
-                    if (SystemTime.Now >= startTime && SystemTime.Now <= endTime)
+                    if (IterationTime >= startTime && IterationTime <= endTime)
                     {
                         return interval;
                     }
@@ -131,8 +131,8 @@ namespace MowControl
         {
             get
             {
-                DateTime nextIntervalStartTime = new DateTime(SystemTime.Now.Year, SystemTime.Now.Month, SystemTime.Now.Day, NextInterval.StartHour, NextInterval.StartMin, 0);
-                if (nextIntervalStartTime < SystemTime.Now)
+                DateTime nextIntervalStartTime = new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, NextInterval.StartHour, NextInterval.StartMin, 0);
+                if (nextIntervalStartTime < IterationTime)
                 {
                     nextIntervalStartTime = nextIntervalStartTime.AddDays(1);
                 }
@@ -187,7 +187,7 @@ namespace MowControl
                 .OrderByDescending(i => i.Time)
                 .FirstOrDefault(i => i.Type == LogType.MowControllerStarted);
 
-            DateTime now = SystemTime.Now;
+            DateTime now = IterationTime;
             DateTime floorNow = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0);
             DateTime dateTime = mowStartedLogItem.Time;
             DateTime floorDate = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, 0, 0, 0);
