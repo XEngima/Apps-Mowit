@@ -101,7 +101,7 @@ namespace MowControl
                 }
 
                 Wetness = wetness;
-                IsWet = Wetness > 0;
+                IsWet = currentPrecipitation > 0 || Wetness > 10;
 
                 // Wait for 15 minutes
                 await Task.Delay(15 * 60 * 1000);
