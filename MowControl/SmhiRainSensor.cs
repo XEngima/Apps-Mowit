@@ -63,12 +63,23 @@ namespace MowControl
 
                 ForecastTimeSerie currentWeather = _smhi.GetCurrentWeather();
 
-                var lastAddedTimeSerie = _weatherTimeSeries.OrderByDescending(ts => ts.validTime).FirstOrDefault(ts => ts.validTime == currentWeather.validTime);
+                var timeSerieNow = _weatherTimeSeries.OrderByDescending(ts => ts.validTime).FirstOrDefault(ts => ts.validTime == currentWeather.validTime);
 
-                if (lastAddedTimeSerie == null)
+                if (timeSerieNow != null)
+                {
+                    for (int i = 0; i < _weatherTimeSeries.Count; i++)
+                    {
+                        if (timeSerieNow.validTime.ToString("yyyy-MM-dd HH:mm") == _weatherTimeSeries[i].validTime.ToString("yyyy-MM-dd HH:mm"))
+                        {
+                            _weatherTimeSeries[i] = timeSerieNow;
+                        }
+                    }
+                }
+                else
                 {
                     _weatherTimeSeries.Add(currentWeather);
                 }
+
 
                 decimal currentPrecipitation = Math.Max(currentWeather.PrecipitationMax, currentWeather.PrecipitationMin);
 
