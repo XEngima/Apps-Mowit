@@ -54,9 +54,9 @@ namespace MowControl
         public bool ContainsTime(DateTime time)
         {
             DateTime intervalStartTime = new DateTime(time.Year, time.Month, time.Day, StartHour, StartMin, 0);
-            DateTime intervalEndTime = new DateTime(time.Year, time.Month, time.Day, EndHour, EndMin, 0);
+            DateTime afterIntervalEndTime = new DateTime(time.Year, time.Month, time.Day, EndHour, EndMin, 0).AddMinutes(1);
 
-            return time >= intervalStartTime && time <= intervalEndTime;
+            return time >= intervalStartTime && time < afterIntervalEndTime;
         }
     }
 }

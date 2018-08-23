@@ -12,19 +12,14 @@ namespace MowerTests
             Now = dateTimeNow;
         }
 
+        public TestSystemTime(int year, int month, int day, int hour, int minute, int second)
+        {
+            Now = new DateTime(year, month, day, hour, minute, second);
+        }
+
         public TestSystemTime(int year, int month, int day, int hour, int minute)
+            :this(year, month, day, hour, minute, 0)
         {
-            Now = new DateTime(year, month, day, hour, minute, 0);
-        }
-
-        public TestSystemTime(int hour, int minute)
-        {
-            Now = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, hour, minute, 0);
-        }
-
-        public TestSystemTime(int hour)
-        {
-            Now = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, hour, 0, 0);
         }
 
         public DateTime Now { get; private set; }

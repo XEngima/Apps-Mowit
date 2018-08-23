@@ -111,13 +111,17 @@ namespace MowControl
                 // Kolla om vi är i ett intervall, och returnera det isf
                 foreach (var interval in Config.TimeIntervals)
                 {
-                    DateTime startTime = new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, interval.StartHour, interval.StartMin, 0);
-                    DateTime endTime = new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, interval.EndHour, interval.EndMin, 0);
+                    //DateTime startTime = new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, interval.StartHour, interval.StartMin, 0);
+                    //DateTime endTime = new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, interval.EndHour, interval.EndMin, 0);
 
-                    if (IterationTime >= startTime && IterationTime <= endTime)
+                    if (interval.ContainsTime(IterationTime))
                     {
                         return interval;
                     }
+                    //if (IterationTime >= startTime && IterationTime <= endTime)
+                    //{
+                    //    return interval;
+                    //}
                 }
 
                 return NextInterval;
@@ -487,7 +491,7 @@ namespace MowControl
 
                         if (!BetweenIntervals)
                         {
-                            Logger.Write(IterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
+                            SetMowingEnded();
                         }
                     }
                 }
@@ -573,7 +577,7 @@ namespace MowControl
 
                                 if (!BetweenIntervals)
                                 {
-                                    Logger.Write(IterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
+                                    SetMowingEnded();
                                 }
                             }
 
@@ -585,7 +589,7 @@ namespace MowControl
 
                                 if (!BetweenIntervals)
                                 {
-                                    Logger.Write(IterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
+                                    SetMowingEnded();
                                 }
                             }
                         }
@@ -596,7 +600,7 @@ namespace MowControl
 
                 if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.EndHour == IterationTime.Hour && NextOrCurrentInterval.EndMin == IterationTime.Minute)
                 {
-                    Logger.Write(IterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
+                    SetMowingEnded();
                 }
             }
             catch (Exception ex)
@@ -630,7 +634,20 @@ namespace MowControl
                     Logger.Write(IterationTime, LogType.MowingStarted, LogLevel.InfoLessInteresting, "Mowing started.");
                 }
             }
+        }
 
+        private void SetMowingEnded()
+        {
+            // Check if last item as a MowingStarted item.
+            var logItems = Logger.LogItems
+                .Where(x => x.Type == LogType.MowingStarted || x.Type == LogType.MowingEnded)
+                .OrderByDescending(x => x.Time)
+                .ToList();
+
+            if (logItems.Count == 0 || logItems[0].Type == LogType.MowingStarted)
+            {
+                Logger.Write(IterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
+            }
         }
     }
 }

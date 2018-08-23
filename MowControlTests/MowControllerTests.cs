@@ -124,7 +124,7 @@ namespace MowerTests
             // Arrange
             var config = TestFactory.NewConfig6To12();
             var powerSwitch = new TestPowerSwitch(isActive: true);
-            var systemTime = new TestSystemTime(13, 0);
+            var systemTime = new TestSystemTime(2018, 08, 23, 13, 0);
             var weatherForecast = new TestWeatherForecast(true, systemTime);
             var systemStartTime = systemTime.Now.AddDays(-1);
             var homeSensor = new TimeBasedHomeSensor(systemStartTime, config, powerSwitch, systemTime);
@@ -140,7 +140,7 @@ namespace MowerTests
         }
 
         [TestMethod]
-        public void CheckAndAct_AfterWorkingIntervalAndComingHomeRightBeforeNextBadWeatherInterval_CurrentTurnedOffOnce()
+        public void RunningOverTime_AfterWorkingIntervalAndComingHomeRightBeforeNextBadWeatherInterval_CurrentTurnedOffOnce()
         {
             // Arrange
             var systemTime = new TestSystemTime(2018, 7, 24, 12, 50);
@@ -170,7 +170,7 @@ namespace MowerTests
         }
 
         [TestMethod]
-        public void CheckAndAct_AfterWorkingIntervalAndComingHomeRightBeforeNextBadWeatherInterval2_CurrentTurnedOffOnce()
+        public void RunningOverTime_AfterWorkingIntervalAndComingHomeRightBeforeNextBadWeatherInterval2_CurrentTurnedOffOnce()
         {
             // Arrange
             var config = TestFactory.NewConfig6To12And13To19();
@@ -200,7 +200,7 @@ namespace MowerTests
         }
 
         [TestMethod]
-        public void CheckAndAct_Running24HoursInGoodWeather_CurrentNeverChanged()
+        public void RunningOverTime_24HoursInGoodWeather_CurrentNeverChanged()
         {
             // Arrange
             var config = TestFactory.NewConfig6To12();
@@ -223,10 +223,10 @@ namespace MowerTests
         }
 
         [TestMethod]
-        public void CheckAndAct_Running24HoursInGoodWeatherGettingBad_CurrentTurnedOffOnce()
+        public void RunningOverTime_24HoursInGoodWeatherGettingBad_CurrentTurnedOffOnce()
         {
             // Arrange
-            var systemTime = new TestSystemTime(2018, 7, 24, 11, 0);
+            var systemTime = new TestSystemTime(2018, 7, 24, 11, 0, 59);
             var config = TestFactory.NewConfig0To6And12To18();
             var powerSwitch = new TestPowerSwitch(isActive: false);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
@@ -265,10 +265,10 @@ namespace MowerTests
         }
 
         [TestMethod]
-        public void CheckAndAct_Running24HoursInGoodWeatherGettingBadStartAtDay_CurrentTurnedOffOnce()
+        public void RunningOverTime_24HoursInGoodWeatherGettingBadStartAtDay_CurrentTurnedOffOnce()
         {
             // Arrange
-            var systemTime = new TestSystemTime(2018, 7, 24, 16, 0);
+            var systemTime = new TestSystemTime(2018, 7, 24, 16, 0, 12);
             var config = TestFactory.NewConfig6To12And18To2359();
             var powerSwitch = new TestPowerSwitch(isActive: false);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
@@ -307,7 +307,7 @@ namespace MowerTests
         }
 
         [TestMethod]
-        public void CheckAndAct_Running24HoursInBadWeatherGettingGood_CurrentTurnedOffOnce()
+        public void RunningOverTime_24HoursInBadWeatherGettingGood_CurrentTurnedOffOnce()
         {
             // Arrange
             var systemTime = new TestSystemTime(2018, 7, 24, 3, 0);
@@ -354,10 +354,10 @@ namespace MowerTests
         }
 
         [TestMethod]
-        public void CheckAndAct_Running24HoursInBadWeatherGettingGoodStartAtDay_CurrentTurnedOffOnce()
+        public void RunningOverTime_24HoursInBadWeatherGettingGoodStartAtDay_CurrentTurnedOffOnce()
         {
             // Arrange
-            var systemTime = new TestSystemTime(2018, 7, 24, 13, 0);
+            var systemTime = new TestSystemTime(2018, 7, 24, 13, 0, 46);
             var config = TestFactory.NewConfig6To12And18To2359();
             var powerSwitch = new TestPowerSwitch(isActive: true);
             var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
@@ -956,8 +956,8 @@ namespace MowerTests
         public void CheckAndAct_MowIntervalStarts_LogMessageWritten()
         {
             // Arrange
+            var systemTime = new TestSystemTime(2018, 7, 24, 3, 0, 3);
             var config = TestFactory.NewConfig3To10And16To2300();
-            var systemTime = new TestSystemTime(2018, 7, 24, 3, 0);
             var powerSwitch = new TestPowerSwitch(PowerStatus.On);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, isHome: true);
@@ -982,7 +982,7 @@ namespace MowerTests
         public void CheckAndAct_MowingEndsWhenIntervalEndsAndMowerHome_LogMessageWritten()
         {
             // Arrange
-            var systemTime = new TestSystemTime(2018, 7, 24, 6, 0);
+            var systemTime = new TestSystemTime(2018, 7, 24, 6, 0, 10);
             var config = TestFactory.NewConfig0To6And12To18();
             var powerSwitch = new TestPowerSwitch(PowerStatus.On);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
@@ -1008,7 +1008,7 @@ namespace MowerTests
         public void CheckAndAct_MowingEndsWhenIntervalEndsAndMowerAway_LogMessageWritten()
         {
             // Arrange
-            var systemTime = new TestSystemTime(2018, 7, 24, 6, 0);
+            var systemTime = new TestSystemTime(2018, 7, 24, 6, 0, 10);
             var config = TestFactory.NewConfig0To6And12To18();
             var powerSwitch = new TestPowerSwitch(PowerStatus.On);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
@@ -1183,7 +1183,7 @@ namespace MowerTests
         public void RunningOverTime_OneDayOrdinaryMowing_CorrectDailyReport()
         {
             // Arrange
-            var systemTime = new TestSystemTime(2018, 7, 24, 0, 0);
+            var systemTime = new TestSystemTime(2018, 7, 24, 0, 0, 45);
             var config = TestFactory.NewConfig6To12And18To2359(usingContactHomeSensor: true);
             var powerSwitch = new TestPowerSwitch(PowerStatus.On);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
