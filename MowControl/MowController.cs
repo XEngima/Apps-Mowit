@@ -406,11 +406,23 @@ namespace MowControl
                 var startLogItem = Logger.LogItems.FirstOrDefault(x => x.Type == LogType.MowControllerStarted);
                 var todayStartTime = new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, 0, 0, 0);
 
+                if (IterationTime.Hour == 0)
+                {
+                    string sDebug = "startLogItem:" + startLogItem?.Time.ToString("yyyy-MM-dd HH:mm") + ";";
+                    Logger.Write(IterationTime, LogType.Debug, LogLevel.Debug, "Debug1: " + sDebug);
+                }
+
                 if (startLogItem.Time < todayStartTime)
                 {
                     var yesterdayStartTime = new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, 0, 0, 0).AddDays(-1);
 
                     var reportLogItem = Logger.LogItems.FirstOrDefault(x => x.Type == LogType.DailyReport && x.Time >= todayStartTime && x.Time < todayStartTime.AddDays(1));
+
+                    if (IterationTime.Hour == 0)
+                    {
+                        string sDebug = "reportLogItem:" + reportLogItem?.Time.ToString("yyyy-MM-dd HH:mm") + ";";
+                        Logger.Write(IterationTime, LogType.Debug, LogLevel.Debug, "Debug2: " + sDebug);
+                    }
 
                     if (reportLogItem == null)
                     {
@@ -444,6 +456,12 @@ namespace MowControl
                         sb.Append(":");
                         sb.Append(mowingTime.Minutes);
                         sb.AppendLine(" hours.");
+
+                        if (IterationTime.Hour == 0)
+                        {
+                            string sDebug = "mowingLogItems.Count:" + mowingLogItems.Count() + ";";
+                            Logger.Write(IterationTime, LogType.Debug, LogLevel.Debug, "Debug: " + sDebug);
+                        }
 
                         Logger.Write(IterationTime, LogType.DailyReport, LogLevel.InfoMoreInteresting, sb.ToString());
                     }
