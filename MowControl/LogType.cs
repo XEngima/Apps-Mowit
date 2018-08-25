@@ -18,5 +18,6 @@ namespace MowControl
         MowingEnded = 10,
         DailyReport = 11,
         HourlyReport = 12,
+        Debug = 13,
     }
 }

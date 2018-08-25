@@ -598,6 +598,16 @@ namespace MowControl
 
                 // Check if we're at an interval end, and in case we are, write a log message
 
+                if (IterationTime.Hour == 23 && IterationTime.Minute == 59)
+                {
+                    string sDebug = "BetweenIntervals:" + BetweenIntervals + ";";
+                    sDebug += "PStatus:" + PowerSwitch.Status + ";";
+                    sDebug += "IEndHour:" + NextOrCurrentInterval.EndHour + ";";
+                    sDebug += "IEndMin:" + NextOrCurrentInterval.EndMin + ";";
+
+                    Logger.Write(IterationTime, LogType.Debug, LogLevel.Debug, "Time is 23:59. " + sDebug);
+                }
+
                 if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.EndHour == IterationTime.Hour && NextOrCurrentInterval.EndMin == IterationTime.Minute)
                 {
                     SetMowingEnded();
