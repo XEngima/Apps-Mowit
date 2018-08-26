@@ -19,7 +19,7 @@ namespace Mowit
         {
             if (Config == null)
             {
-                throw new InvalidOperationException("E-postskickaren måste initieras innan den används.");
+                throw new InvalidOperationException("The EmailSender must be initialized before use.");
             }
 
             var smtp = new SmtpClient
@@ -29,15 +29,16 @@ namespace Mowit
                 EnableSsl = Config.EnableSsl,
                 DeliveryMethod = SmtpDeliveryMethod.Network,
                 UseDefaultCredentials = Config.UseDefaultCredentials,
-                Credentials = new NetworkCredential(Config.UserName, Config.Password)
+                Credentials = new NetworkCredential(Config.UserName, Config.Password),
             };
 
             using (var message = new MailMessage(
                 new MailAddress(Config.FromAddress, Config.FromName), 
                 new MailAddress(Config.ToAddress, Config.ToName))
             {
-                Subject = subject,
-                Body = body,
+                Subject = subject.Replace("\n", " ").Substring(0, 100),
+                Body = body.Replace("\n", "<br />"),
+                IsBodyHtml = true,
             })
             {
                 smtp.Send(message);

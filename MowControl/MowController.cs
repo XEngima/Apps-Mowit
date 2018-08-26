@@ -367,11 +367,21 @@ namespace MowControl
             CheckAndAct();
         }
 
+        private bool _isActing = false;
+
         /// <summary>
         /// Kollar om strömmen ska slås på eller av och gör det i sådana fall.
         /// </summary>
         public void CheckAndAct()
         {
+            if (_isActing)
+            {
+                Logger.Write(SystemTime.Now, LogType.Debug, LogLevel.Debug, "Last CheckAndAct was not finished.");
+                return;
+            }
+
+            _isActing = true;
+
             //if (SystemTime.Now.ToString("HH:mm") == "00:04")
             //{
             //    int debug = 0;
@@ -406,11 +416,11 @@ namespace MowControl
                 var startLogItem = Logger.LogItems.FirstOrDefault(x => x.Type == LogType.MowControllerStarted);
                 var todayStartTime = new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, 0, 0, 0);
 
-                if (IterationTime.Hour == 0)
-                {
-                    string sDebug = "startLogItem:" + startLogItem?.Time.ToString("yyyy-MM-dd HH:mm") + ";";
-                    Logger.Write(IterationTime, LogType.Debug, LogLevel.Debug, "Debug1: " + sDebug);
-                }
+                //if (IterationTime.Hour == 0)
+                //{
+                //    string sDebug = "startLogItem:" + startLogItem?.Time.ToString("yyyy-MM-dd HH:mm") + ";";
+                //    Logger.Write(IterationTime, LogType.Debug, LogLevel.Debug, "Debug1: " + sDebug);
+                //}
 
                 if (startLogItem.Time < todayStartTime)
                 {
@@ -418,11 +428,11 @@ namespace MowControl
 
                     var reportLogItem = Logger.LogItems.FirstOrDefault(x => x.Type == LogType.DailyReport && x.Time >= todayStartTime && x.Time < todayStartTime.AddDays(1));
 
-                    if (IterationTime.Hour == 0)
-                    {
-                        string sDebug = "reportLogItem:" + reportLogItem?.Time.ToString("yyyy-MM-dd HH:mm") + ";";
-                        Logger.Write(IterationTime, LogType.Debug, LogLevel.Debug, "Debug2: " + sDebug);
-                    }
+                    //if (IterationTime.Hour == 0)
+                    //{
+                    //    string sDebug = "reportLogItem:" + reportLogItem?.Time.ToString("yyyy-MM-dd HH:mm") + ";";
+                    //    Logger.Write(IterationTime, LogType.Debug, LogLevel.Debug, "Debug2: " + sDebug);
+                    //}
 
                     if (reportLogItem == null)
                     {
@@ -457,11 +467,11 @@ namespace MowControl
                         sb.Append(mowingTime.Minutes);
                         sb.AppendLine(" hours.");
 
-                        if (IterationTime.Hour == 0)
-                        {
-                            string sDebug = "mowingLogItems.Count:" + mowingLogItems.Count() + ";";
-                            Logger.Write(IterationTime, LogType.Debug, LogLevel.Debug, "Debug: " + sDebug);
-                        }
+                        //if (IterationTime.Hour == 0)
+                        //{
+                        //    string sDebug = "mowingLogItems.Count:" + mowingLogItems.Count() + ";";
+                        //    Logger.Write(IterationTime, LogType.Debug, LogLevel.Debug, "Debug: " + sDebug);
+                        //}
 
                         Logger.Write(IterationTime, LogType.DailyReport, LogLevel.InfoMoreInteresting, sb.ToString());
                     }
@@ -630,6 +640,8 @@ namespace MowControl
                 {
                     SetMowingEnded();
                 }
+
+                _isActing = false;
             }
             catch (Exception ex)
             {

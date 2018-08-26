@@ -78,7 +78,7 @@ namespace Mowit
             {
                 if (Config.EmailConfig.SendEmails)
                 {
-                    EmailSender.SendMail(e.Item.Message, e.Item.Time.ToString("yyyy-MM-dd HH:mm") + " - " + e.Item.Message);
+                    EmailSender.SendMail(e.Item.Message.Replace("\n", " ").Substring(0, 100), e.Item.Time.ToString("yyyy-MM-dd HH:mm") + " - " + e.Item.Message);
                 }
             }
             catch (Exception ex)
