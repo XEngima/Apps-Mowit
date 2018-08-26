@@ -36,7 +36,7 @@ namespace Mowit
                 new MailAddress(Config.FromAddress, Config.FromName), 
                 new MailAddress(Config.ToAddress, Config.ToName))
             {
-                Subject = subject.Replace("\n", " ").Substring(0, 100),
+                Subject = subject.Replace("\n", " "),
                 Body = body.Replace("\n", "<br />"),
                 IsBodyHtml = true,
             })
