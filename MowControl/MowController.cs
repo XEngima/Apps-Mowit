@@ -640,8 +640,6 @@ namespace MowControl
                 {
                     SetMowingEnded();
                 }
-
-                _isActing = false;
             }
             catch (Exception ex)
             {
@@ -656,6 +654,10 @@ namespace MowControl
                 {
                     Logger.Write(IterationTime, LogType.Failure, LogLevel.Error, ex.Message);
                 }
+            }
+            finally
+            {
+                _isActing = false;
             }
         }
 
