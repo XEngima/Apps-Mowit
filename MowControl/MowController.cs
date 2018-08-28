@@ -13,7 +13,7 @@ namespace MowControl
     {
         private bool _mowerIsHome;
 
-        public static string Version { get { return "1.27"; } }
+        public static string Version { get { return "1.29"; } }
 
         public MowController(
             IMowControlConfig config,
@@ -526,34 +526,37 @@ namespace MowControl
 
                 // Turn on power
 
-                if (PowerSwitch.Status != PowerStatus.On && !RainSensor.IsWet)
+                if (PowerSwitch.Status != PowerStatus.On)
                 {
-                    foreach (var interval in Config.TimeIntervals)
+                    if (!RainSensor.IsWet)
                     {
-                        // Om ett intervall håller på
-                        if (interval.ContainsTime(IterationTime))
+                        foreach (var interval in Config.TimeIntervals)
                         {
-                            DateTime minutesFromEnd = (new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, interval.EndHour, interval.EndMin, 0).AddMinutes(-10));
-
-                            // If the interval is not close to end
-                            if (IterationTime < minutesFromEnd)
+                            // Om ett intervall håller på
+                            if (interval.ContainsTime(IterationTime))
                             {
-                                int forecastHours = interval.EndHour - IterationTime.Hour + 2;
+                                DateTime minutesFromEnd = (new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, interval.EndHour, interval.EndMin, 0).AddMinutes(-10));
 
-                                if (Config.UsingContactHomeSensor)
+                                // If the interval is not close to end
+                                if (IterationTime < minutesFromEnd)
                                 {
-                                    forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
-                                }
+                                    int forecastHours = interval.EndHour - IterationTime.Hour + 2;
 
-                                string weatherAheadDescription;
+                                    if (Config.UsingContactHomeSensor)
+                                    {
+                                        forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
+                                    }
 
-                                bool weatherWillBeGood = WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out weatherAheadDescription);
-                                bool mowingNecessary = MowingNecessary();
-                                if (weatherWillBeGood && mowingNecessary)
-                                {
-                                    PowerSwitch.TurnOn();
-                                    Logger.Write(IterationTime, LogType.PowerOn, LogLevel.Info, "Power was turned on. " + weatherAheadDescription);
-                                    SetMowingStarted();
+                                    string weatherAheadDescription;
+
+                                    bool weatherWillBeGood = WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out weatherAheadDescription);
+                                    bool mowingNecessary = MowingNecessary();
+                                    if (weatherWillBeGood && mowingNecessary)
+                                    {
+                                        PowerSwitch.TurnOn();
+                                        Logger.Write(IterationTime, LogType.PowerOn, LogLevel.Info, "Power was turned on. " + weatherAheadDescription);
+                                        SetMowingStarted();
+                                    }
                                 }
                             }
                         }
@@ -626,7 +629,7 @@ namespace MowControl
 
                 // Check if we're at an interval end, and in case we are, write a log message
 
-                if (IterationTime.Hour == 23 && IterationTime.Minute == 59)
+                if (IterationTime.Hour == 22 && IterationTime.Minute == 00)
                 {
                     string sDebug = "BetweenIntervals:" + BetweenIntervals + ";";
                     sDebug += "PStatus:" + PowerSwitch.Status + ";";

@@ -773,6 +773,34 @@ namespace MowerTests
         }
 
         [TestMethod]
+        public void CheckAndAct_BadWeatherBetweenTwoIntervalsWet_CurrentTurnedOn()
+        {
+            // Arrange
+            var config = TestFactory.NewConfig3To10And16To2300(usingContactHomeSensor: true);
+            var systemTime = new TestSystemTime(2018, 7, 24, 10, 5);
+            var powerSwitch = new TestPowerSwitch(isActive: false);
+            var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime, true);
+            var logger = TestFactory.NewMowLogger(systemTime.Now);
+            var rainSensor = new TestRainSensor(isWet: true);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
+            Assert.IsFalse(powerSwitch.HasBeenTurnedOffOnce);
+            Assert.IsTrue(powerSwitch.HasBeenTurnedOnOnce);
+
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOn).ToList();
+
+            Assert.AreEqual(1, logItems.Count);
+            string expectedLogDate = "2018-07-24 10:05";
+            Assert.AreEqual(expectedLogDate, logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+        }
+
+        [TestMethod]
         public void CheckAndAct_BadWeatherAtEndOfInterval_CurrentTurnedOffBeforeTnterval()
         {
             // Arrange
