@@ -13,7 +13,7 @@ namespace MowControl
     {
         private bool _mowerIsHome;
 
-        public static string Version { get { return "1.29"; } }
+        public static string Version { get { return "1.31"; } }
 
         public MowController(
             IMowControlConfig config,
@@ -628,16 +628,6 @@ namespace MowControl
                 }
 
                 // Check if we're at an interval end, and in case we are, write a log message
-
-                if (IterationTime.Hour == 22 && IterationTime.Minute == 00)
-                {
-                    string sDebug = "BetweenIntervals:" + BetweenIntervals + ";";
-                    sDebug += "PStatus:" + PowerSwitch.Status + ";";
-                    sDebug += "IEndHour:" + NextOrCurrentInterval.EndHour + ";";
-                    sDebug += "IEndMin:" + NextOrCurrentInterval.EndMin + ";";
-
-                    Logger.Write(IterationTime, LogType.Debug, LogLevel.Debug, "Time is 23:59. " + sDebug);
-                }
 
                 if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.EndHour == IterationTime.Hour && NextOrCurrentInterval.EndMin == IterationTime.Minute)
                 {
