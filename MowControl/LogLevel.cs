@@ -8,7 +8,7 @@ namespace MowControl
     {
         Debug = 10,
         InfoLessInteresting = 20,
-        Info = 20,
+        Info = 30,
         InfoMoreInteresting = 40,
         Warning = 50,
         Error = 60,

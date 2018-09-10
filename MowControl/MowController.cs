@@ -13,7 +13,7 @@ namespace MowControl
     {
         private bool _mowerIsHome;
 
-        public static string Version { get { return "1.31"; } }
+        public static string Version { get { return "1.33"; } }
 
         public MowController(
             IMowControlConfig config,
@@ -376,7 +376,7 @@ namespace MowControl
         {
             if (_isActing)
             {
-                Logger.Write(SystemTime.Now, LogType.Debug, LogLevel.Debug, "Last CheckAndAct was not finished.");
+                Logger.Write(SystemTime.Now, LogType.Debug, LogLevel.Error, "Last CheckAndAct was not finished.");
                 return;
             }
 
