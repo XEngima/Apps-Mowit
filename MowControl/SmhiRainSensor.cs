@@ -102,6 +102,13 @@ namespace MowControl
                     // If it's not raining, decrease wetness in relation to relative humidity
                     if (precipitation == 0)
                     {
+                        // Increase wetness if relative humidity is high and grass is not so wet
+                        if (timeSerie.RelativeHumidity >= 90 && wetness < 50)
+                        {
+                            wetness += (timeSerie.RelativeHumidity - 90) * 2;
+                        }
+
+                        // Lower wetness since grass is drying up
                         wetness -= (100 - timeSerie.RelativeHumidity) / 2;
                     }
 

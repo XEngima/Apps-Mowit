@@ -157,5 +157,36 @@ namespace MowerTests
             // Assert
             Assert.IsTrue(isWet);
         }
+
+        [TestMethod]
+        public void IsWet_NotRainButHighHumidityDuringNight_Wet()
+        {
+            // Assign
+            var systemTime = new TestSystemTime(2018, 8, 14, 6, 0);
+
+            // Forecasted weather
+            var smhi = new TestSmhi(systemTime, new ForecastTimeSerie[]
+            {
+                NewTimeSerie(new DateTime(2018, 8, 14, 6, 0, 0), precipitationMax: 0m, relativeHumidity: 70),
+            });
+
+            // Past weather
+            var rainSensor = new SmhiRainSensor(systemTime, smhi, new ForecastTimeSerie[] {
+                NewTimeSerie(new DateTime(2018, 8, 13, 12, 22, 0), precipitationMax: 0m, relativeHumidity: 80),
+                NewTimeSerie(new DateTime(2018, 8, 13, 13, 23, 0), precipitationMax: 0, relativeHumidity: 85),
+                NewTimeSerie(new DateTime(2018, 8, 14, 14, 0, 0), precipitationMax: 0, relativeHumidity: 90),
+                NewTimeSerie(new DateTime(2018, 8, 14, 15, 1, 0), precipitationMax: 0, relativeHumidity: 95),
+                NewTimeSerie(new DateTime(2018, 8, 14, 16, 2, 0), precipitationMax: 0, relativeHumidity: 99),
+                NewTimeSerie(new DateTime(2018, 8, 14, 17, 3, 0), precipitationMax: 0, relativeHumidity: 98),
+                NewTimeSerie(new DateTime(2018, 8, 14, 17, 4, 0), precipitationMax: 0m, relativeHumidity: 95),
+                NewTimeSerie(new DateTime(2018, 8, 14, 17, 5, 0), precipitationMax: 0m, relativeHumidity: 90),
+            });
+
+            // Act
+            bool isWet = rainSensor.IsWet;
+
+            // Assert
+            Assert.IsTrue(isWet);
+        }
     }
 }
