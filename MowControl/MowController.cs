@@ -416,23 +416,11 @@ namespace MowControl
                 var startLogItem = Logger.LogItems.FirstOrDefault(x => x.Type == LogType.MowControllerStarted);
                 var todayStartTime = new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, 0, 0, 0);
 
-                //if (IterationTime.Hour == 0)
-                //{
-                //    string sDebug = "startLogItem:" + startLogItem?.Time.ToString("yyyy-MM-dd HH:mm") + ";";
-                //    Logger.Write(IterationTime, LogType.Debug, LogLevel.Debug, "Debug1: " + sDebug);
-                //}
-
                 if (startLogItem.Time < todayStartTime)
                 {
                     var yesterdayStartTime = new DateTime(IterationTime.Year, IterationTime.Month, IterationTime.Day, 0, 0, 0).AddDays(-1);
 
                     var reportLogItem = Logger.LogItems.FirstOrDefault(x => x.Type == LogType.DailyReport && x.Time >= todayStartTime && x.Time < todayStartTime.AddDays(1));
-
-                    //if (IterationTime.Hour == 0)
-                    //{
-                    //    string sDebug = "reportLogItem:" + reportLogItem?.Time.ToString("yyyy-MM-dd HH:mm") + ";";
-                    //    Logger.Write(IterationTime, LogType.Debug, LogLevel.Debug, "Debug2: " + sDebug);
-                    //}
 
                     if (reportLogItem == null)
                     {
@@ -503,23 +491,49 @@ namespace MowControl
 
                 // Check if mower is lost, but only if contact sensor is used.
 
-                if (Config.UsingContactHomeSensor && !_mowerIsHome)
+                if (Config.UsingContactHomeSensor)
                 {
-                    var lastMowerLeftLogItem = Logger.LogItems
-                        .OrderByDescending(x => x.Time)
-                        .FirstOrDefault(x => x.Type == LogType.MowerLeft);
-
-                    var lastLogItem = Logger.LogItems
-                        .OrderByDescending(x => x.Time)
-                        .FirstOrDefault(x => x.Type == LogType.MowerLost || x.Type == LogType.MowerCame);
-
-                    if (lastMowerLeftLogItem?.Time.AddHours(Config.MaxMowingHoursWithoutCharge) <= IterationTime && lastLogItem?.Type != LogType.MowerLost)
+                    if (_mowerIsHome)
                     {
-                        Logger.Write(IterationTime, LogType.MowerLost, LogLevel.InfoMoreInteresting, $"Mower seems to be lost. It did not return home after {Config.MaxMowingHoursWithoutCharge} hours as expected.");
+                        var lastMowerCameLogItem = Logger.LogItems
+                            .OrderByDescending(x => x.Time)
+                            .FirstOrDefault(x => x.Type == LogType.MowerCame);
 
-                        if (!BetweenIntervals)
+                        var lastLogItem = Logger.LogItems
+                            .OrderByDescending(x => x.Time)
+                            .FirstOrDefault(x => x.Type == LogType.MowerLost || x.Type == LogType.MowerStuckInHome || x.Type == LogType.MowerLeft);
+
+                        bool mowerCameTooLongAgo = (lastMowerCameLogItem == null || lastMowerCameLogItem.Time.AddHours(Config.MaxChargingHours) <= IterationTime);
+
+                        if (mowerCameTooLongAgo && lastLogItem?.Type != LogType.MowerStuckInHome)
                         {
-                            SetMowingEnded();
+                            Logger.Write(IterationTime, LogType.MowerStuckInHome, LogLevel.InfoMoreInteresting, $"Mower seems to be stuck at home. It did not leave after {Config.MaxMowingHoursWithoutCharge} hours of charging time.");
+
+                            if (!BetweenIntervals)
+                            {
+                                SetMowingEnded();
+                            }
+                        }
+                    }
+
+                    if (!_mowerIsHome)
+                    {
+                        var lastMowerLeftLogItem = Logger.LogItems
+                            .OrderByDescending(x => x.Time)
+                            .FirstOrDefault(x => x.Type == LogType.MowerLeft);
+
+                        var lastLogItem = Logger.LogItems
+                            .OrderByDescending(x => x.Time)
+                            .FirstOrDefault(x => x.Type == LogType.MowerLost || x.Type == LogType.MowerCame);
+
+                        if (lastMowerLeftLogItem?.Time.AddHours(Config.MaxMowingHoursWithoutCharge) <= IterationTime && lastLogItem?.Type != LogType.MowerLost)
+                        {
+                            Logger.Write(IterationTime, LogType.MowerLost, LogLevel.InfoMoreInteresting, $"Mower seems to be lost. It did not return home after {Config.MaxMowingHoursWithoutCharge} hours as expected.");
+
+                            if (!BetweenIntervals)
+                            {
+                                SetMowingEnded();
+                            }
                         }
                     }
                 }
@@ -678,7 +692,7 @@ namespace MowControl
                 .Where(x => x.Type == LogType.MowingStarted || x.Type == LogType.MowingEnded)
                 .OrderByDescending(x => x.Time)
                 .ToList();
-
+            
             if (logItems.Count == 0 || logItems[0].Type == LogType.MowingStarted)
             {
                 Logger.Write(IterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");

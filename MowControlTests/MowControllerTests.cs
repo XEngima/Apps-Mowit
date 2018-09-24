@@ -686,8 +686,8 @@ namespace MowerTests
             var logItems = logger.LogItems.Where(x => x.Type == LogType.MowerStuckInHome).ToList();
 
             Assert.AreEqual(1, logItems.Count);
-            Assert.AreEqual(LogType.MowerLost, logItems[0].Type);
-            Assert.AreEqual("2018-06-24 18:10", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+            Assert.AreEqual(LogType.MowerStuckInHome, logItems[0].Type);
+            Assert.AreEqual("2018-06-24 18:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
         }
 
         [TestMethod]
@@ -1074,6 +1074,9 @@ namespace MowerTests
             var logger = TestFactory.NewMowLogger(systemTime.Now);
             var rainSensor = new TestRainSensor(isWet: false);
             var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
+
+            logger.LogItems.Add(new LogItem(new DateTime(2018, 7, 24, 3, 30, 0), LogType.MowerLeft, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2018, 7, 24, 5, 0, 0), LogType.MowerCame, LogLevel.Debug, ""));
 
             // Act
             mowController.CheckAndAct();
