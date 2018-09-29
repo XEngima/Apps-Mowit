@@ -103,9 +103,9 @@ namespace MowControl
                     if (precipitation == 0)
                     {
                         // Increase wetness if relative humidity is high and grass is not so wet
-                        if (timeSerie.RelativeHumidity >= 90 && wetness < 50)
+                        if (timeSerie.RelativeHumidity >= 80 && wetness < 75)
                         {
-                            wetness += (timeSerie.RelativeHumidity - 90) * 2;
+                            wetness += (timeSerie.RelativeHumidity - 80);
                         }
 
                         // Lower wetness since grass is drying up
