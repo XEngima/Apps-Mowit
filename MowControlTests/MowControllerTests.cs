@@ -400,7 +400,6 @@ namespace MowerTests
             Assert.AreEqual("2018-07-25 12:00", logItems[1].Time.ToString("yyyy-MM-dd HH:mm"));
         }
 
-        [TestMethod]
         public void CheckAndAct_HasWorkedEnoughGoodWeatherAhead_PowerOffNotNeeded()
         {
             // Arrange
@@ -669,7 +668,7 @@ namespace MowerTests
             // Arrange
             var systemTime = new TestSystemTime(2018, 06, 24, 18, 0);
             var config = TestFactory.NewConfig3To10And16To2300(
-                usingContactHomeSensor: true, 
+                usingContactHomeSensor: true,
                 maxChargingHours: 2);
             var powerSwitch = new TestPowerSwitch(isActive: true);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
@@ -688,6 +687,31 @@ namespace MowerTests
             Assert.AreEqual(1, logItems.Count);
             Assert.AreEqual(LogType.MowerStuckInHome, logItems[0].Type);
             Assert.AreEqual("2018-06-24 18:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+        }
+
+        [TestMethod]
+        public void MowerHomeGrassWet_CheckAndActNotLeavingHome_NoLogMessageTellingMowerNeverLeft()
+        {
+            // Arrange
+            var config = TestFactory.NewConfig3To10And16To2300(
+                usingContactHomeSensor: true,
+                maxChargingHours: 2);
+            var systemTime = new TestSystemTime(2018, 06, 24, 18, 0);
+            var powerSwitch = new TestPowerSwitch(isActive: false);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime, true);
+            var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 0, 0, 0));
+
+            var rainSensor = new TestRainSensor(isWet: true);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
+
+            // Act
+            mowController.CheckAndAct(); // Should see that mower seems to be stuck in home
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowerStuckInHome).ToList();
+
+            Assert.AreEqual(0, logItems.Count);
         }
 
         [TestMethod]

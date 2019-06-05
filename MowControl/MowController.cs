@@ -152,7 +152,17 @@ namespace MowControl
                 throw new InvalidOperationException("The time based home sensor cannot act as a contact home sensor. If the time based home sensor is used, please set option UseContactHomeSensor to false.");
             }
 
-            Logger.Write(SystemTime.Now, LogType.MowControllerStarted, LogLevel.InfoMoreInteresting, $"Mow Controller {Version} started.");
+            var sb = new StringBuilder();
+            string comma = "";
+
+            foreach (var interval in Config.TimeIntervals)
+            {
+                sb.Append(comma);
+                sb.Append(interval.ToString());
+                comma = ", ";
+            }
+
+            Logger.Write(SystemTime.Now, LogType.MowControllerStarted, LogLevel.InfoMoreInteresting, $"Mow Controller {Version} started. Intervals: " + sb + ".");
             _mowerIsHome = HomeSensor.IsHome;
 
             try
@@ -493,7 +503,7 @@ namespace MowControl
 
                 if (Config.UsingContactHomeSensor)
                 {
-                    if (_mowerIsHome)
+                    if (_mowerIsHome && PowerSwitch.Status == PowerStatus.On)
                     {
                         var lastMowerCameLogItem = Logger.LogItems
                             .OrderByDescending(x => x.Time)

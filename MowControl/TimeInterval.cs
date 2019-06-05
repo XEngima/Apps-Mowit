@@ -58,5 +58,10 @@ namespace MowControl
 
             return time >= intervalStartTime && time < afterIntervalEndTime;
         }
+
+        public override string ToString()
+        {
+            return StartHour.ToString("00") + ":" + StartMin.ToString("00") + " - " + EndHour.ToString("00") + ":" + EndMin.ToString("00");
+        }
     }
 }
