@@ -22,7 +22,8 @@ namespace MowControl
             ISystemTime systemTime,
             IHomeSensor homeSensor,
             IMowLogger logger,
-            IRainSensor rainSensor)
+            IRainSensor rainSensor,
+            bool? mowerIsHome = null)
         {
             Config = config;
             PowerSwitch = powerSwitch;
@@ -32,7 +33,14 @@ namespace MowControl
             Logger = logger;
             RainSensor = rainSensor;
 
-            _mowerIsHome = HomeSensor.IsHome;
+            if (mowerIsHome.HasValue)
+            {
+                _mowerIsHome = mowerIsHome.Value;
+            }
+            else
+            {
+                _mowerIsHome = HomeSensor.IsHome;
+            }
         }
 
         private IMowControlConfig Config { get; set; }
@@ -464,6 +472,8 @@ namespace MowControl
                         sb.Append(":");
                         sb.Append(mowingTime.Minutes);
                         sb.AppendLine(" hours.");
+
+                        // If contact sensor, also add detailed mowing summary
 
                         //if (IterationTime.Hour == 0)
                         //{
