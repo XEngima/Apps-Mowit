@@ -13,7 +13,7 @@ namespace MowControl
     {
         private bool _mowerIsHome;
 
-        public static string Version { get { return "1.37"; } }
+        public static string Version { get { return "1.38"; } }
 
         public MowController(
             IMowControlConfig config,
@@ -475,6 +475,15 @@ namespace MowControl
 
                         // If contact sensor, also add detailed mowing summary
 
+                        //var time = yesterdayStartTime;
+
+                        //while (time < todayStartTime)
+                        //{
+                            
+
+                        //    time.AddMinutes(1);
+                        //}
+
                         //if (IterationTime.Hour == 0)
                         //{
                         //    string sDebug = "mowingLogItems.Count:" + mowingLogItems.Count() + ";";
@@ -513,25 +522,36 @@ namespace MowControl
 
                 if (Config.UsingContactHomeSensor)
                 {
-                    if (_mowerIsHome && PowerSwitch.Status == PowerStatus.On)
+                    int forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
+
+                    if (_mowerIsHome && PowerSwitch.Status == PowerStatus.On && !RainSensor.IsWet && WeatherForecast.CheckIfWeatherWillBeGood(forecastHours))
                     {
                         var lastMowerCameLogItem = Logger.LogItems
                             .OrderByDescending(x => x.Time)
                             .FirstOrDefault(x => x.Type == LogType.MowerCame);
 
-                        var lastLogItem = Logger.LogItems
+                        var lastPowerOnOrOffLogItem = Logger.LogItems
                             .OrderByDescending(x => x.Time)
-                            .FirstOrDefault(x => x.Type == LogType.MowerLost || x.Type == LogType.MowerStuckInHome || x.Type == LogType.MowerLeft);
+                            .FirstOrDefault(x => x.Type == LogType.PowerOn || x.Type == LogType.PowerOff);
 
-                        bool mowerCameTooLongAgo = (lastMowerCameLogItem == null || lastMowerCameLogItem.Time.AddHours(Config.MaxChargingHours) <= IterationTime);
-
-                        if (mowerCameTooLongAgo && lastLogItem?.Type != LogType.MowerStuckInHome)
+                        if (lastPowerOnOrOffLogItem == null || lastPowerOnOrOffLogItem.Time.AddHours(Config.MaxChargingHours) <= IterationTime)
                         {
-                            Logger.Write(IterationTime, LogType.MowerStuckInHome, LogLevel.InfoMoreInteresting, $"Mower seems to be stuck at home. It did not leave after {Config.MaxMowingHoursWithoutCharge} hours of charging time.");
+                            var lastLogItem = Logger.LogItems
+                                .OrderByDescending(x => x.Time)
+                                .FirstOrDefault(x => x.Type == LogType.MowerLost || x.Type == LogType.MowerStuckInHome || x.Type == LogType.MowerLeft);
 
-                            if (!BetweenIntervals)
+                            //DateTime latestReferenceTime = lastMowerCameLogItem.
+
+                            bool mowerCameTooLongAgo = (lastMowerCameLogItem == null || lastMowerCameLogItem.Time.AddHours(Config.MaxChargingHours) <= IterationTime);
+
+                            if (mowerCameTooLongAgo && lastLogItem?.Type != LogType.MowerStuckInHome)
                             {
-                                SetMowingEnded();
+                                Logger.Write(IterationTime, LogType.MowerStuckInHome, LogLevel.InfoMoreInteresting, $"Mower seems to be stuck at home. It did not leave after {Config.MaxMowingHoursWithoutCharge} hours of charging time.");
+
+                                if (!BetweenIntervals)
+                                {
+                                    SetMowingEnded();
+                                }
                             }
                         }
                     }

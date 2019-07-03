@@ -1363,6 +1363,126 @@ namespace MowerTests
         }
 
         [TestMethod]
+        public void CheckAndAct_PowerTurnedOnAfterBeenOffAWhileAlmostTwoHoursLaterGoodWeather_NotReportingMowerStuck()
+        {
+            // Arrange
+            var logger = TestFactory.NewMowLogger(new DateTime(2019, 06, 18, 0, 0, 0));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 7, 31, 0), LogType.MowerCame, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 8, 22, 0), LogType.PowerOff, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 8, 22, 0), LogType.MowingEnded, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 16, 5, 0), LogType.PowerOn, LogLevel.Debug, ""));
+
+            var systemTime = new TestSystemTime(2019, 6, 18, 18, 4);
+            var config = TestFactory.NewConfig1To16And17To2359(usingContactHomeSensor: true);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime,
+                isHome: true,
+                mowerCameTime: new DateTime(2019, 6, 18, 7, 31, 0));
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowerStuckInHome).ToList();
+
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
+            Assert.AreEqual(0, logItems.Count);
+        }
+
+        [TestMethod]
+        public void CheckAndAct_PowerTurnedOnAfterBeenOffAWhileTwoHoursLaterIsWet_NotReportingMowerStuck()
+        {
+            // Arrange
+            var logger = TestFactory.NewMowLogger(new DateTime(2019, 06, 18, 0, 0, 0));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 7, 31, 0), LogType.MowerCame, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 8, 22, 0), LogType.PowerOff, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 8, 22, 0), LogType.MowingEnded, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 16, 5, 0), LogType.PowerOn, LogLevel.Debug, ""));
+
+            var systemTime = new TestSystemTime(2019, 6, 18, 18, 6);
+            var config = TestFactory.NewConfig1To16And17To2359(usingContactHomeSensor: true);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime,
+                isHome: true,
+                mowerCameTime: new DateTime(2019, 6, 18, 7, 31, 0));
+            var rainSensor = new TestRainSensor(isWet: true);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowerStuckInHome).ToList();
+
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.Off);
+            Assert.AreEqual(0, logItems.Count);
+        }
+
+        [TestMethod]
+        public void CheckAndAct_PowerTurnedOnAfterBeenOffAWhileTwoHoursLaterBadWeather_NotReportingMowerStuck()
+        {
+            // Arrange
+            var logger = TestFactory.NewMowLogger(new DateTime(2019, 06, 18, 0, 0, 0));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 7, 31, 0), LogType.MowerCame, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 8, 22, 0), LogType.PowerOff, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 8, 22, 0), LogType.MowingEnded, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 16, 5, 0), LogType.PowerOn, LogLevel.Debug, ""));
+
+            var systemTime = new TestSystemTime(2019, 6, 18, 18, 6);
+            var config = TestFactory.NewConfig1To16And17To2359(usingContactHomeSensor: true);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime,
+                isHome: true,
+                mowerCameTime: new DateTime(2019, 6, 18, 7, 31, 0));
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowerStuckInHome).ToList();
+
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.Off);
+            Assert.AreEqual(0, logItems.Count);
+        }
+
+        [TestMethod]
+        public void CheckAndAct_PowerTurnedOnAfterBeenOffAWhileTwoHoursLaterGoodWeather_ReportingMowerStuck()
+        {
+            // Arrange
+            var logger = TestFactory.NewMowLogger(new DateTime(2019, 06, 18, 0, 0, 0));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 7, 31, 0), LogType.MowerCame, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 8, 22, 0), LogType.PowerOff, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 8, 22, 0), LogType.MowingEnded, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 16, 5, 0), LogType.PowerOn, LogLevel.Debug, ""));
+
+            var systemTime = new TestSystemTime(2019, 6, 18, 18, 6);
+            var config = TestFactory.NewConfig1To16And17To2359(usingContactHomeSensor: true);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime,
+                isHome: true,
+                mowerCameTime: new DateTime(2019, 6, 18, 7, 31, 0));
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowerStuckInHome && x.Time.Hour == 18).ToList();
+
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
+            Assert.AreEqual(1, logItems.Count);
+        }
+
+        [TestMethod]
         public void CheckAndAct_MowerLeftALittleBitBeforeIntervalStart_MowingStarted()
         {
             // Arrange
