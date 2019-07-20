@@ -1615,5 +1615,33 @@ namespace MowerTests
 
             Assert.IsTrue(actual.Contains(expected));
         }
+
+        [TestMethod]
+        public void StoodStillForHalfADayInBadWeather_LeavingChargingInterval_PowerTurnedOff()
+        {
+            // Arrange
+            var logger = TestFactory.NewMowLogger(new DateTime(2019, 7, 16, 9, 0, 0));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 7, 16, 9, 0, 0), LogType.MowingStarted, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 7, 16, 9, 16, 0), LogType.MowerCame, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 7, 16, 9, 46, 0), LogType.PowerOff, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 7, 16, 9, 46, 0), LogType.MowingEnded, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 7, 16, 16, 5, 0), LogType.PowerOn, LogLevel.Debug, ""));
+
+            var systemTime = new TestSystemTime(2019, 7, 16, 16, 55, 0);
+            var config = TestFactory.NewConfig9To16And17To2359(usingContactHomeSensor: true);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime, isHome: true);
+            var rainSensor = new TestRainSensor(isWet: true);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.Off);
+            var logItems = logger.LogItems.Where(x => x.Type == LogType.PowerOff && x.Time.Hour == 16).ToList();
+            Assert.AreEqual(1, logItems.Count);
+        }
     }
 }
