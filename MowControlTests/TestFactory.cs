@@ -102,6 +102,28 @@ namespace MowerTests
             };
         }
 
+        public static IMowControlConfig NewConfig10To12And20To2359(
+            bool usingContactHomeSensor = false,
+            int maxMowingWithoutCharge = 2,
+            int maxChargingHours = 2)
+
+        {
+            var timeIntervals = new List<TimeInterval>();
+            timeIntervals.Add(new TimeInterval(10, 0, 12, 0));
+            timeIntervals.Add(new TimeInterval(20, 0, 23, 59));
+
+            return new MowControlConfig()
+            {
+                TimeIntervals = timeIntervals,
+                AverageWorkPerDayHours = 8,
+                MaxHourlyThunderPercent = 0,
+                MaxHourlyPrecipitaionMillimeter = 0,
+                UsingContactHomeSensor = usingContactHomeSensor,
+                MaxMowingHoursWithoutCharge = maxMowingWithoutCharge,
+                MaxChargingHours = maxChargingHours,
+            };
+        }
+
         public static IMowControlConfig NewConfig9To16And17To2359(
             bool usingContactHomeSensor = false,
             int maxMowingWithoutCharge = 2,

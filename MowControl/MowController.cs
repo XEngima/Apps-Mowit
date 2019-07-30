@@ -13,7 +13,7 @@ namespace MowControl
     {
         private bool _mowerIsHome;
 
-        public static string Version { get { return "1.38"; } }
+        public static string Version { get { return "1.39"; } }
 
         public MowController(
             IMowControlConfig config,
@@ -281,38 +281,6 @@ namespace MowControl
             return mowingNecessary;
         }
 
-        ///// <summary>
-        ///// Gets the time when the mower came. SystemTime.Now if the mower has not came back or if the time is unknown.
-        ///// </summary>
-        //private DateTime? MowerCameTime
-        //{
-        //    get
-        //    {
-        //        return HomeSensor.MowerCameTime;
-
-        //        //if (HomeSensor.IsHome)
-        //        //{
-        //        //    var mowerLeftLogItem = Logger.LogItems
-        //        //        .OrderByDescending(x => x.Time)
-        //        //        .FirstOrDefault(x => x.Type == LogType.MowerLeft);
-
-        //        //    var mowerCameLogItem = Logger.LogItems
-        //        //        .OrderByDescending(x => x.Time)
-        //        //        .FirstOrDefault(x => x.Type == LogType.MowerCame);
-
-        //        //    if (mowerCameLogItem != null)
-        //        //    {
-        //        //        if (mowerLeftLogItem == null || mowerLeftLogItem.Time < mowerCameLogItem.Time)
-        //        //        {
-        //        //            return mowerCameLogItem.Time;
-        //        //        }
-        //        //    }
-        //        //}
-
-        //        //return SystemTime.Now;
-        //    }
-        //}
-
         /// <summary>
         /// Returns whether the current system time is between (or not in) time intervals.
         /// </summary>
@@ -387,6 +355,10 @@ namespace MowControl
 
         private bool _isActing = false;
 
+        private bool? HomeFromStart { get; set; }
+
+        private LogAnalyzer LogAnalyzer;
+
         /// <summary>
         /// Kollar om strömmen ska slås på eller av och gör det i sådana fall.
         /// </summary>
@@ -397,19 +369,29 @@ namespace MowControl
                 Logger.Write(SystemTime.Now, LogType.Debug, LogLevel.Error, "Last CheckAndAct was not finished.");
                 return;
             }
-
             _isActing = true;
 
-            //if (SystemTime.Now.ToString("HH:mm") == "00:04")
-            //{
-            //    int debug = 0;
-            //}
+            if (!HomeFromStart.HasValue)
+            {
+                HomeFromStart = HomeSensor.IsHome;
+            }
+
+            LogAnalyzer = new LogAnalyzer(Logger, HomeFromStart.Value);
 
             IterationTime = SystemTime.Now;
 
             if (Config.TimeIntervals == null)
             {
                 throw new InvalidOperationException();
+            }
+
+            // Calculate forecast hours
+
+            int forecastHours = NextOrCurrentInterval.EndHour - IterationTime.Hour + 2;
+
+            if (Config.UsingContactHomeSensor)
+            {
+                forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
             }
 
             try
@@ -494,13 +476,6 @@ namespace MowControl
                     }
                 }
 
-                // Check if there has ocurred an interval start, and in case it has, write a log message
-
-                if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && NextOrCurrentInterval.StartHour == IterationTime.Hour && NextOrCurrentInterval.StartMin == IterationTime.Minute)
-                {
-                    SetMowingStarted();
-                }
-
                 // Check if mower has entered or exited its home since last time
 
                 if (_mowerIsHome != HomeSensor.IsHome)
@@ -520,9 +495,9 @@ namespace MowControl
 
                 // Check if mower is lost, but only if contact sensor is used.
 
-                if (Config.UsingContactHomeSensor)
+                if (Config.UsingContactHomeSensor && !LogAnalyzer.IsLost)
                 {
-                    int forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
+                    //int forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
 
                     if (_mowerIsHome && PowerSwitch.Status == PowerStatus.On && !RainSensor.IsWet && WeatherForecast.CheckIfWeatherWillBeGood(forecastHours))
                     {
@@ -578,6 +553,14 @@ namespace MowControl
                     }
                 }
 
+                // Check if there has ocurred an interval start, and in case it has, write a log message
+
+                bool atLastMinuteOfInterval = NextOrCurrentInterval.EndHour == IterationTime.Hour && NextOrCurrentInterval.EndMin == IterationTime.Minute;
+                if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && !LogAnalyzer.IsMowing && !LogAnalyzer.IsLost && !RainSensor.IsWet && WeatherForecast.CheckIfWeatherWillBeGood(forecastHours) && !atLastMinuteOfInterval)
+                {
+                    SetMowingStarted();
+                }
+
                 // Turn on power
 
                 if (PowerSwitch.Status != PowerStatus.On)
@@ -594,12 +577,12 @@ namespace MowControl
                                 // If the interval is not close to end
                                 if (IterationTime < minutesFromEnd)
                                 {
-                                    int forecastHours = interval.EndHour - IterationTime.Hour + 2;
+                                    //int forecastHours = interval.EndHour - IterationTime.Hour + 2;
 
-                                    if (Config.UsingContactHomeSensor)
-                                    {
-                                        forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
-                                    }
+                                    //if (Config.UsingContactHomeSensor)
+                                    //{
+                                    //    forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
+                                    //}
 
                                     string weatherAheadDescription;
 
@@ -637,7 +620,7 @@ namespace MowControl
                         double minutesLeftToIntervalStart = (nextIntervalExactStartTime - IterationTime).TotalMinutes;
 
                         // If there will be rain, turn off power
-                        int forecastHours = NextInterval.ToTimeSpan().Hours + 2;
+                        //int forecastHours = NextInterval.ToTimeSpan().Hours + 2;
 
                         // If a contact home sensor is used, weather can be checked for much smaller time spans
                         if (Config.UsingContactHomeSensor)
@@ -712,13 +695,7 @@ namespace MowControl
         {
             if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On)
             {
-                // Check if last item as a MowinEnded item.
-                var logItems = Logger.LogItems
-                    .Where(x => x.Type == LogType.MowingStarted || x.Type == LogType.MowingEnded)
-                    .OrderByDescending(x => x.Time)
-                    .ToList();
-
-                if (logItems.Count == 0 || logItems[0].Type == LogType.MowingEnded)
+                if (!LogAnalyzer.IsMowing)
                 {
                     Logger.Write(IterationTime, LogType.MowingStarted, LogLevel.InfoLessInteresting, "Mowing started.");
                 }
