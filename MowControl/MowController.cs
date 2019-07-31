@@ -454,25 +454,21 @@ namespace MowControl
                         sb.Append("Total mowed: ");
                         sb.Append(mowingTimeSpan.Hours);
                         sb.Append(":");
-                        sb.Append(mowingTimeSpan.Minutes);
+                        sb.Append(mowingTimeSpan.Minutes.ToString("00"));
                         sb.AppendLine(" hours.");
 
                         // If contact sensor, also add detailed mowing summary
 
-                        //var time = yesterdayStartTime;
+                        if (Config.UsingContactHomeSensor)
+                        {
+                            TimeSpan actualMowingTimeSpan = LogAnalyzer.GetActuallyMowingTimeForDay(yesterdayStartTime);
 
-                        //while (time < todayStartTime)
-                        //{
-                            
-
-                        //    time.AddMinutes(1);
-                        //}
-
-                        //if (IterationTime.Hour == 0)
-                        //{
-                        //    string sDebug = "mowingLogItems.Count:" + mowingLogItems.Count() + ";";
-                        //    Logger.Write(IterationTime, LogType.Debug, LogLevel.Debug, "Debug: " + sDebug);
-                        //}
+                            sb.Append("Actual out mowing time: ");
+                            sb.Append(actualMowingTimeSpan.Hours);
+                            sb.Append(":");
+                            sb.Append(actualMowingTimeSpan.Minutes.ToString("00"));
+                            sb.AppendLine(" hours.");
+                        }
 
                         Logger.Write(IterationTime, LogType.DailyReport, LogLevel.InfoMoreInteresting, sb.ToString());
                     }

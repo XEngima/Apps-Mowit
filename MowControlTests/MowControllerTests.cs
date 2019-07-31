@@ -1267,6 +1267,7 @@ namespace MowerTests
                               23:59 Mowing ended.
 
                               Total mowed: 11:59 hours.
+                              Actual out mowing time: 2:00 hours.
                               ".Replace(" ", "");
 
             string actual = daySummaryItems[0].Message.Replace(" ", "");
@@ -1603,12 +1604,7 @@ namespace MowerTests
 
             Assert.AreEqual(1, daySummaryItems.Count);
 
-            string expected = @"Actual Working Intervals
-
-                              01:00-02:30 Working.
-                              03:30-05:00 Working.
-
-                              Acual working time: 3:00 hours.
+            string expected = @"Actual out mowing time: 3:00 hours.
                               ".Replace(" ", "").Replace("\r\n", " ");
 
             string actual = daySummaryItems[0].Message.Replace(" ", "").Replace("\r\n", " ");
