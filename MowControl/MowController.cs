@@ -369,7 +369,9 @@ namespace MowControl
                 Logger.Write(SystemTime.Now, LogType.Debug, LogLevel.Error, "Last CheckAndAct was not finished.");
                 return;
             }
+
             _isActing = true;
+            bool mowerLeftThisTurn = false;
 
             if (!HomeFromStart.HasValue)
             {
@@ -488,44 +490,28 @@ namespace MowControl
                     else
                     {
                         Logger.Write(IterationTime, LogType.MowerLeft, LogLevel.Info, "Mower left.");
+                        mowerLeftThisTurn = true;
                     }
                 }
 
-                // Check if mower is lost, but only if contact sensor is used.
+                // Check if mower is lost or stuck, but only if contact sensor is used.
 
                 if (Config.UsingContactHomeSensor && !LogAnalyzer.IsLost)
                 {
                     //int forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
 
-                    if (_mowerIsHome && PowerSwitch.Status == PowerStatus.On && !RainSensor.IsWet && WeatherForecast.CheckIfWeatherWillBeGood(forecastHours))
+                    if (_mowerIsHome && PowerSwitch.Status == PowerStatus.On && !RainSensor.IsWet && WeatherForecast.CheckIfWeatherWillBeGood(forecastHours) && LogAnalyzer.IsMowing && !LogAnalyzer.IsStuck)
                     {
-                        var lastMowerCameLogItem = Logger.LogItems
+                        var lastEssentialLogItem = Logger.LogItems
                             .OrderByDescending(x => x.Time)
-                            .FirstOrDefault(x => x.Type == LogType.MowerCame);
+                            .FirstOrDefault(x => x.Type == LogType.MowerCame || x.Type == LogType.PowerOn || x.Type == LogType.PowerOff || x.Type == LogType.MowingStarted || x.Type == LogType.MowingEnded);
 
-                        var lastPowerOnOrOffLogItem = Logger.LogItems
-                            .OrderByDescending(x => x.Time)
-                            .FirstOrDefault(x => x.Type == LogType.PowerOn || x.Type == LogType.PowerOff);
+                        bool mowerHasHadEnoughChargingTime = (lastEssentialLogItem != null && lastEssentialLogItem.Time.AddHours(Config.MaxChargingHours) <= IterationTime);
 
-                        if (lastPowerOnOrOffLogItem == null || lastPowerOnOrOffLogItem.Time.AddHours(Config.MaxChargingHours) <= IterationTime)
+                        if (mowerHasHadEnoughChargingTime && !BetweenIntervals)
                         {
-                            var lastLogItem = Logger.LogItems
-                                .OrderByDescending(x => x.Time)
-                                .FirstOrDefault(x => x.Type == LogType.MowerLost || x.Type == LogType.MowerStuckInHome || x.Type == LogType.MowerLeft);
-
-                            //DateTime latestReferenceTime = lastMowerCameLogItem.
-
-                            bool mowerCameTooLongAgo = (lastMowerCameLogItem == null || lastMowerCameLogItem.Time.AddHours(Config.MaxChargingHours) <= IterationTime);
-
-                            if (mowerCameTooLongAgo && lastLogItem?.Type != LogType.MowerStuckInHome)
-                            {
-                                Logger.Write(IterationTime, LogType.MowerStuckInHome, LogLevel.InfoMoreInteresting, $"Mower seems to be stuck at home. It did not leave after {Config.MaxMowingHoursWithoutCharge} hours of charging time.");
-
-                                if (!BetweenIntervals)
-                                {
-                                    SetMowingEnded();
-                                }
-                            }
+                            Logger.Write(IterationTime, LogType.MowerStuckInHome, LogLevel.InfoMoreInteresting, $"Mower seems to be stuck at home. It did not leave after {Config.MaxMowingHoursWithoutCharge} hours of charging time.");
+                            SetMowingEnded();
                         }
                     }
 
@@ -554,7 +540,7 @@ namespace MowControl
                 // Check if there has ocurred an interval start, and in case it has, write a log message
 
                 bool atLastMinuteOfInterval = NextOrCurrentInterval.EndHour == IterationTime.Hour && NextOrCurrentInterval.EndMin == IterationTime.Minute;
-                if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && !LogAnalyzer.IsMowing && !LogAnalyzer.IsLost && !RainSensor.IsWet && WeatherForecast.CheckIfWeatherWillBeGood(forecastHours) && !atLastMinuteOfInterval)
+                if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && !LogAnalyzer.IsMowing && !LogAnalyzer.IsLost && (!LogAnalyzer.IsStuck || mowerLeftThisTurn) && !RainSensor.IsWet && WeatherForecast.CheckIfWeatherWillBeGood(forecastHours) && !atLastMinuteOfInterval)
                 {
                     SetMowingStarted();
                 }

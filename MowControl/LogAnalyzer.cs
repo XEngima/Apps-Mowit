@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MowControl.DateTimeExtensions;
 
 namespace MowControl
 {
@@ -19,6 +20,7 @@ namespace MowControl
             IsLost = false;
             IsMowing = false;
             IsHome = homeFromStart;
+            IsStuck = false;
 
             if (_logger != null)
             {
@@ -93,7 +95,7 @@ namespace MowControl
 
                         if (mowingTimePerDay.Date.ToString("yyyy-MM-dd") == CurrentLogItem.Time.ToString("yyyy-MM-dd"))
                         {
-                            mowingTimePerDay.AddSpentTime(CurrentLogItem.Time - LastMowingStartedTime);
+                            mowingTimePerDay.AddSpentTime(CurrentLogItem.Time.FloorMinutes() - LastMowingStartedTime.FloorMinutes());
                         }
 
                         LastMowingEndedTime = CurrentLogItem.Time;
@@ -106,7 +108,6 @@ namespace MowControl
             }
         }
 
-
         private bool _isActuallyMowing;
         public bool IsActuallyMowing
         {
@@ -118,6 +119,11 @@ namespace MowControl
             {
                 if (_isActuallyMowing != value)
                 {
+                    if (CurrentLogItem.Time.ToString("yyyy-MM-dd HH:mm") == "2018-07-24 23:59")
+                    {
+                        int debug = 0;
+                    }
+
                     _isActuallyMowing = value;
 
                     if (!_isActuallyMowing) // If just stopped mowing
@@ -126,7 +132,7 @@ namespace MowControl
 
                         if (actualMowingTimePerDay.Date.ToString("yyyy-MM-dd") == CurrentLogItem.Time.ToString("yyyy-MM-dd"))
                         {
-                            actualMowingTimePerDay.AddSpentTime(CurrentLogItem.Time - LastActualMowingStartedTime);
+                            actualMowingTimePerDay.AddSpentTime(CurrentLogItem.Time.FloorMinutes() - LastActualMowingStartedTime.FloorMinutes());
                         }
 
                         LastActualMowingEndedTime = CurrentLogItem.Time;
@@ -138,7 +144,10 @@ namespace MowControl
                 }
             }
         }
+
         public bool IsHome { get; private set; }
+
+        public bool IsStuck { get; private set; }
 
         private LogItem CurrentLogItem { get; set; }
 
@@ -175,17 +184,24 @@ namespace MowControl
                         {
                             IsHome = false;
                             IsActuallyMowing = true;
+                            IsStuck = false;
                         }
                         break;
                     case LogType.MowingStarted:
                         {
                             IsMowing = true;
+                            IsStuck = false;
                         }
                         break;
                     case LogType.MowingEnded:
                         {
                             IsMowing = false;
                             IsActuallyMowing = false;
+                        }
+                        break;
+                    case LogType.MowerStuckInHome:
+                        {
+                            IsStuck = true;
                         }
                         break;
                 }

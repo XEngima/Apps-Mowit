@@ -666,6 +666,9 @@ namespace MowerTests
         public void CheckAndAct_NotLeavingHome_LogMessageTellingMowerNeverLeft()
         {
             // Arrange
+            var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 0, 0, 0));
+            logger.LogItems.Add(new LogItem(new DateTime(2018, 6, 24, 16, 0, 0), LogType.MowingStarted, LogLevel.Debug, ""));
+
             var systemTime = new TestSystemTime(2018, 06, 24, 18, 0);
             var config = TestFactory.NewConfig3To10And16To2300(
                 usingContactHomeSensor: true,
@@ -673,9 +676,8 @@ namespace MowerTests
             var powerSwitch = new TestPowerSwitch(isActive: true);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, true);
-            var logger = TestFactory.NewMowLogger(new DateTime(2018, 6, 24, 0, 0, 0));
-
             var rainSensor = new TestRainSensor(isWet: false);
+
             var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
@@ -1248,11 +1250,32 @@ namespace MowerTests
             var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
             // Act
+            RunOverTime(mowController, systemTime, 6, 0);
+            homeSensor.SetIsHome(false);
+            RunOverTime(mowController, systemTime, 1, 30);
+            homeSensor.SetIsHome(true);
+            RunOverTime(mowController, systemTime, 1, 0);
+            homeSensor.SetIsHome(false);
+            RunOverTime(mowController, systemTime, 1, 30);
+            homeSensor.SetIsHome(true);
+            RunOverTime(mowController, systemTime, 8, 0);
+            homeSensor.SetIsHome(false);
+            RunOverTime(mowController, systemTime, 1, 30);
+            homeSensor.SetIsHome(true);
+            RunOverTime(mowController, systemTime, 1, 0);
+            homeSensor.SetIsHome(false);
+            RunOverTime(mowController, systemTime, 1, 30);
+            homeSensor.SetIsHome(true);
+            RunOverTime(mowController, systemTime, 1, 0);
+            homeSensor.SetIsHome(false);
+            RunOverTime(mowController, systemTime, 1, 0);
+            homeSensor.SetIsHome(true);
+
+            // Running into next day
             RunOverTime(mowController, systemTime, 8, 0);
             homeSensor.SetIsHome(false);
             RunOverTime(mowController, systemTime, 2, 0);
             homeSensor.SetIsHome(true);
-            RunOverTime(mowController, systemTime, 14, 5);
 
             // Assert
             var daySummaryItems = logger.LogItems.Where(x => x.Type == LogType.DailyReport).ToList();
@@ -1267,7 +1290,7 @@ namespace MowerTests
                               23:59 Mowing ended.
 
                               Total mowed: 11:59 hours.
-                              Actual out mowing time: 2:00 hours.
+                              Actual out mowing time: 6:59 hours.
                               ".Replace(" ", "");
 
             string actual = daySummaryItems[0].Message.Replace(" ", "");
@@ -1462,8 +1485,9 @@ namespace MowerTests
             logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 8, 22, 0), LogType.PowerOff, LogLevel.Debug, ""));
             logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 8, 22, 0), LogType.MowingEnded, LogLevel.Debug, ""));
             logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 16, 5, 0), LogType.PowerOn, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 6, 18, 16, 5, 0), LogType.MowingStarted, LogLevel.Debug, ""));
 
-            var systemTime = new TestSystemTime(2019, 6, 18, 18, 6);
+            var systemTime = new TestSystemTime(2019, 6, 18, 18, 5);
             var config = TestFactory.NewConfig1To16And17To2359(usingContactHomeSensor: true);
             var powerSwitch = new TestPowerSwitch(PowerStatus.On);
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
@@ -1669,6 +1693,35 @@ namespace MowerTests
             Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
 
             var logItems = logger.LogItems.Where(x => x.Type == LogType.MowingStarted && x.Time.Hour == 10).ToList();
+            Assert.AreEqual(0, logItems.Count);
+        }
+
+        [TestMethod]
+        public void MowerAtHomeIntervalEnds_NextIntervalStarting_MowingStartedShouldNotOccurr()
+        {
+            // Arrange
+            var logger = TestFactory.NewMowLogger(new DateTime(2019, 7, 26, 0, 0, 0));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 7, 26, 10, 0, 0), LogType.MowingStarted, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 7, 26, 11, 36, 0), LogType.MowerCame, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 7, 26, 12, 0, 0), LogType.MowingEnded, LogLevel.Debug, ""));
+
+            var systemTime = new TestSystemTime(2019, 7, 26, 13, 36);
+            var config = TestFactory.NewConfig10To12And20To2359(usingContactHomeSensor: true);
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime,
+                isHome: true,
+                mowerCameTime: new DateTime(2019, 7, 26, 11, 36, 0));
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor, mowerIsHome: true);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
+
+            var logItems = logger.LogItems.Where(x => x.Time.Hour == 13 && x.Time.Minute == 36).ToList();
             Assert.AreEqual(0, logItems.Count);
         }
     }
