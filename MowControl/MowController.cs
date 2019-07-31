@@ -448,11 +448,13 @@ namespace MowControl
                             }
                         }
 
+                        TimeSpan mowingTimeSpan = LogAnalyzer.GetMowingTimeForDay(yesterdayStartTime);
+
                         sb.AppendLine();
                         sb.Append("Total mowed: ");
-                        sb.Append(Math.Floor(mowingTime.TotalHours));
+                        sb.Append(mowingTimeSpan.Hours);
                         sb.Append(":");
-                        sb.Append(mowingTime.Minutes);
+                        sb.Append(mowingTimeSpan.Minutes);
                         sb.AppendLine(" hours.");
 
                         // If contact sensor, also add detailed mowing summary
