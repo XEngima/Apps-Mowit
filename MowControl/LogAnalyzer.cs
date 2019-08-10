@@ -89,14 +89,22 @@ namespace MowControl
                 {
                     _isMowing = value;
 
+                    if (CurrentLogItem.Time.Day == 9)
+                    {
+                        int debug = 0;
+                    }
+
                     if (!_isMowing) // If just stopped mowing
                     {
                         var mowingTimePerDay = GetLastMowingTimePerDayItem();
 
-                        if (mowingTimePerDay.Date.ToString("yyyy-MM-dd") == CurrentLogItem.Time.ToString("yyyy-MM-dd"))
+                        if (mowingTimePerDay.Date.ToString("yyyy-MM-dd") != CurrentLogItem.Time.ToString("yyyy-MM-dd"))
                         {
-                            mowingTimePerDay.AddSpentTime(CurrentLogItem.Time.FloorMinutes() - LastMowingStartedTime.FloorMinutes());
+                            mowingTimePerDay = new TimePerDayItem(CurrentLogItem.Time);
+                            _mowingTimePerDayList.Add(mowingTimePerDay);
                         }
+
+                        mowingTimePerDay.AddSpentTime(CurrentLogItem.Time.FloorMinutes() - LastMowingStartedTime.FloorMinutes());
 
                         LastMowingEndedTime = CurrentLogItem.Time;
                     }
@@ -130,10 +138,13 @@ namespace MowControl
                     {
                         var actualMowingTimePerDay = GetLastActuallyMowingTimePerDayItem();
 
-                        if (actualMowingTimePerDay.Date.ToString("yyyy-MM-dd") == CurrentLogItem.Time.ToString("yyyy-MM-dd"))
+                        if (actualMowingTimePerDay.Date.ToString("yyyy-MM-dd") != CurrentLogItem.Time.ToString("yyyy-MM-dd"))
                         {
-                            actualMowingTimePerDay.AddSpentTime(CurrentLogItem.Time.FloorMinutes() - LastActualMowingStartedTime.FloorMinutes());
+                            actualMowingTimePerDay = new TimePerDayItem(CurrentLogItem.Time);
+                            _actualMowingTimePerDayList.Add(actualMowingTimePerDay);
                         }
+
+                        actualMowingTimePerDay.AddSpentTime(CurrentLogItem.Time.FloorMinutes() - LastActualMowingStartedTime.FloorMinutes());
 
                         LastActualMowingEndedTime = CurrentLogItem.Time;
                     }
