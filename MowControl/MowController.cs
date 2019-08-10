@@ -378,9 +378,14 @@ namespace MowControl
                 HomeFromStart = HomeSensor.IsHome;
             }
 
-            LogAnalyzer = new LogAnalyzer(Logger, HomeFromStart.Value);
-
             IterationTime = SystemTime.Now;
+
+            if (IterationTime.Hour == 0 && IterationTime.Minute == 0)
+            {
+                Logger.Write(IterationTime, LogType.NewDay, LogLevel.Debug, "A new day has begun.");
+            }
+
+            LogAnalyzer = new LogAnalyzer(Logger, HomeFromStart.Value);
 
             if (Config.TimeIntervals == null)
             {
@@ -469,6 +474,14 @@ namespace MowControl
                             sb.Append(actualMowingTimeSpan.Hours);
                             sb.Append(":");
                             sb.Append(actualMowingTimeSpan.Minutes.ToString("00"));
+                            sb.AppendLine(" hours.");
+
+                            TimeSpan exactMowerAwayTimeSpan = LogAnalyzer.GetMowerAwayTimeForDay(yesterdayStartTime);
+
+                            sb.Append("Exact mower away time: ");
+                            sb.Append(exactMowerAwayTimeSpan.Hours);
+                            sb.Append(":");
+                            sb.Append(exactMowerAwayTimeSpan.Minutes.ToString("00"));
                             sb.AppendLine(" hours.");
                         }
 
@@ -681,7 +694,11 @@ namespace MowControl
             {
                 if (!LogAnalyzer.IsMowing)
                 {
-                    Logger.Write(IterationTime, LogType.MowingStarted, LogLevel.InfoLessInteresting, "Mowing started.");
+                    bool atLastMinuteOfInterval = NextOrCurrentInterval.EndHour == IterationTime.Hour && NextOrCurrentInterval.EndMin == IterationTime.Minute;
+                    if (!atLastMinuteOfInterval)
+                    {
+                        Logger.Write(IterationTime, LogType.MowingStarted, LogLevel.InfoLessInteresting, "Mowing started.");
+                    }
                 }
             }
         }

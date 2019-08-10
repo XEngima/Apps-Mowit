@@ -19,5 +19,6 @@ namespace MowControl
         DailyReport = 11,
         HourlyReport = 12,
         Debug = 13,
+        NewDay = 14,
     }
 }

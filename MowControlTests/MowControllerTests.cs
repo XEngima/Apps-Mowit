@@ -1268,7 +1268,7 @@ namespace MowerTests
             homeSensor.SetIsHome(true);
             RunOverTime(mowController, systemTime, 1, 0);
             homeSensor.SetIsHome(false);
-            RunOverTime(mowController, systemTime, 1, 0);
+            RunOverTime(mowController, systemTime, 0, 59);
             homeSensor.SetIsHome(true);
 
             // Running into next day
@@ -1291,6 +1291,7 @@ namespace MowerTests
 
                               Total mowed: 11:59 hours.
                               Actual out mowing time: 6:59 hours.
+                              Exact mower away time: 6:59 hours.
                               ".Replace(" ", "");
 
             string actual = daySummaryItems[0].Message.Replace(" ", "");
@@ -1730,6 +1731,7 @@ namespace MowerTests
         {
             // Arrange
             var logger = TestFactory.NewMowLogger(new DateTime(2019, 8, 7, 0, 0, 0));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 9, 0, 0, 0), LogType.NewDay, LogLevel.Debug, ""));
             logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 9, 20, 0, 0), LogType.MowingStarted, LogLevel.Debug, ""));
             logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 9, 20, 30, 0), LogType.MowerLeft, LogLevel.Debug, ""));
             logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 9, 21, 30, 0), LogType.MowerCame, LogLevel.Debug, ""));
@@ -1756,11 +1758,14 @@ namespace MowerTests
                               ".Replace(" ", "").Replace("\r\n", " ");
             string expectedActualMowingTime = @"Actual out mowing time: 2:29 hours.
                               ".Replace(" ", "").Replace("\r\n", " ");
+            string expectedExactAwayTime = @"Exact mower away time: 2:29 hours.
+                              ".Replace(" ", "").Replace("\r\n", " ");
 
             string actualReport = daySummaryItems[0].Message.Replace(" ", "").Replace("\r\n", " ");
 
             Assert.IsTrue(actualReport.Contains(expectedIntervalMowingTime));
             Assert.IsTrue(actualReport.Contains(expectedActualMowingTime));
+            Assert.IsTrue(actualReport.Contains(expectedExactAwayTime));
         }
 
         [TestMethod]
