@@ -22,7 +22,11 @@ namespace MowerTests
 
         }
 
-        public static IMowControlConfig NewConfig6To12And13To19()
+        public static IMowControlConfig NewConfig6To12And13To19(
+            bool usingContactHomeSensor = false,
+            int maxMowingWithoutCharge = 2,
+            int maxChargingHours = 2,
+            int averageWorkPerDayHours = 10)
         {
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(6, 0, 12, 0));
@@ -31,16 +35,20 @@ namespace MowerTests
             return new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
-                AverageWorkPerDayHours = 8,
+                AverageWorkPerDayHours = averageWorkPerDayHours,
                 MaxHourlyThunderPercent = 0,
-                MaxHourlyPrecipitaionMillimeter = 0
+                MaxHourlyPrecipitaionMillimeter = 0,
+                UsingContactHomeSensor = usingContactHomeSensor,
+                MaxMowingHoursWithoutCharge = maxMowingWithoutCharge,
+                MaxChargingHours = maxChargingHours
             };
         }
 
         public static IMowControlConfig NewConfig6To12And18To2359(
             bool usingContactHomeSensor = false,
             int maxMowingWithoutCharge = 2,
-            int maxChargingHours = 2)
+            int maxChargingHours = 2,
+            int averageWorkPerDayHours = 10)
         {
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(6, 0, 12, 0));
@@ -49,7 +57,7 @@ namespace MowerTests
             return new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
-                AverageWorkPerDayHours = 10,
+                AverageWorkPerDayHours = averageWorkPerDayHours,
                 MaxHourlyThunderPercent = 0,
                 MaxHourlyPrecipitaionMillimeter = 0,
                 UsingContactHomeSensor = usingContactHomeSensor,
@@ -116,6 +124,52 @@ namespace MowerTests
             {
                 TimeIntervals = timeIntervals,
                 AverageWorkPerDayHours = 8,
+                MaxHourlyThunderPercent = 0,
+                MaxHourlyPrecipitaionMillimeter = 0,
+                UsingContactHomeSensor = usingContactHomeSensor,
+                MaxMowingHoursWithoutCharge = maxMowingWithoutCharge,
+                MaxChargingHours = maxChargingHours,
+            };
+        }
+
+        public static IMowControlConfig NewConfig09To11And21To23(
+            bool usingContactHomeSensor = false,
+            int maxMowingWithoutCharge = 2,
+            int maxChargingHours = 2,
+            int averageWorkPerDayHours = 8)
+
+        {
+            var timeIntervals = new List<TimeInterval>();
+            timeIntervals.Add(new TimeInterval(9, 0, 11, 0));
+            timeIntervals.Add(new TimeInterval(21, 0, 23, 0));
+
+            return new MowControlConfig()
+            {
+                TimeIntervals = timeIntervals,
+                AverageWorkPerDayHours = averageWorkPerDayHours,
+                MaxHourlyThunderPercent = 0,
+                MaxHourlyPrecipitaionMillimeter = 0,
+                UsingContactHomeSensor = usingContactHomeSensor,
+                MaxMowingHoursWithoutCharge = maxMowingWithoutCharge,
+                MaxChargingHours = maxChargingHours,
+            };
+        }
+
+        public static IMowControlConfig NewConfig08To11And20To23(
+            bool usingContactHomeSensor = false,
+            int maxMowingWithoutCharge = 2,
+            int maxChargingHours = 2,
+            int averageWorkPerDayHours = 8)
+
+        {
+            var timeIntervals = new List<TimeInterval>();
+            timeIntervals.Add(new TimeInterval(8, 0, 11, 0));
+            timeIntervals.Add(new TimeInterval(20, 0, 23, 0));
+
+            return new MowControlConfig()
+            {
+                TimeIntervals = timeIntervals,
+                AverageWorkPerDayHours = averageWorkPerDayHours,
                 MaxHourlyThunderPercent = 0,
                 MaxHourlyPrecipitaionMillimeter = 0,
                 UsingContactHomeSensor = usingContactHomeSensor,

@@ -51,6 +51,49 @@ namespace MowControl
             return _mowerAwayList[_mowerAwayList.Count - 1];
         }
 
+        public double GetAverageMowingTime(DateTime iterationTime)
+        {
+            double totalHours = 0;
+            DateTime todayDate = new DateTime(iterationTime.Year, iterationTime.Month, iterationTime.Day);
+            DateTime startDate = todayDate.AddDays(-7);
+            DateTime date = startDate;
+            int daysCount = 0;
+            bool startedCounting = false;
+
+            while (date <= todayDate)
+            {
+                var mowingTime = _mowingTimePerDayList.FirstOrDefault(mt => mt.Date.ToString("yyyy-MM-dd") == date.ToString("yyyy-MM-dd"));
+
+                if (mowingTime != null)
+                {
+                    totalHours += mowingTime.SpentTime.TotalHours;
+                    startedCounting = true;
+                }
+
+                if (startedCounting)
+                {
+                    daysCount++;
+                }
+
+                date = date.AddDays(1);
+            }
+
+            // If an interval has started today but not ended, then add the hours since start.
+            var logItem = _logger.LogItems.OrderByDescending(x => x.Time).FirstOrDefault(x => (x.Type == LogType.MowingStarted || x.Type == LogType.MowingEnded) && x.Time.ToString("yyyy-MM-dd") == iterationTime.ToString("yyyy-MM-dd"));
+
+            if (logItem != null && logItem.Type == LogType.MowingStarted)
+            {
+                totalHours += (iterationTime - logItem.Time).TotalHours;
+            }
+
+            if (daysCount > 0)
+            {
+                return totalHours / daysCount;
+            }
+
+            return 0;
+        }
+
         public TimeSpan GetMowingTimeForDay(DateTime date)
         {
             foreach (var mowingTimePerDay in _mowingTimePerDayList)

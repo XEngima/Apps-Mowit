@@ -13,7 +13,7 @@ namespace MowControl
     {
         private bool _mowerIsHome;
 
-        public static string Version { get { return "1.41"; } }
+        public static string Version { get { return "1.42"; } }
 
         public MowController(
             IMowControlConfig config,
@@ -188,16 +188,13 @@ namespace MowControl
         }
 
         /// <summary>
-        /// Kontrollerar om klippning är nödvändigt, dvs. om antalet timmar per dag redan är uppfyllt sedan
-        /// servicen startade.
+        /// Kontrollerar om klippning är nödvändigt, dvs. om antalet timmar per dag redan är uppfyllt för de senaste dagarna.
         /// </summary>
         /// <returns>true om klippning är nödvändig, annars false.</returns>
         private bool MowingNecessary()
         {
-            if (Config.UsingContactHomeSensor)
-            {
-                return true;
-            }
+            double averageWorkingHours = LogAnalyzer.GetAverageMowingTime(IterationTime);
+            return averageWorkingHours < Config.AverageWorkPerDayHours;
 
             double workHours = 0d;
             double hoursOverSchedule = 0d;
@@ -645,9 +642,7 @@ namespace MowControl
                                     SetMowingEnded();
                                 }
                             }
-
-                            // If mowing not necessary, turn off power
-                            if (!MowingNecessary())
+                            else if (!MowingNecessary()) // If mowing not necessary, turn off power
                             {
                                 PowerSwitch.TurnOff();
                                 Logger.Write(IterationTime, LogType.PowerOff, LogLevel.Info, "Power was turned off. Mowing not necessary.");
