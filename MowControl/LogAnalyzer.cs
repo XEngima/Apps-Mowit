@@ -55,7 +55,7 @@ namespace MowControl
         {
             double totalHours = 0;
             DateTime todayDate = new DateTime(iterationTime.Year, iterationTime.Month, iterationTime.Day);
-            DateTime startDate = todayDate.AddDays(-7);
+            DateTime startDate = todayDate.AddDays(-4);
             DateTime date = startDate;
             int daysCount = 0;
             bool startedCounting = false;
