@@ -20,5 +20,10 @@ namespace MowControl
         {
             SpentTime = SpentTime + timeToAdd;
         }
+
+        public override string ToString()
+        {
+            return Date.ToString("yyyy-MM-dd") + " - " + SpentTime.ToString();
+        }
     }
 }

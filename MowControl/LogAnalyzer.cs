@@ -325,15 +325,24 @@ namespace MowControl
                     case LogType.MowerLeft:
                         {
                             IsHome = false;
-                            IsActuallyMowing = true;
                             IsStuck = false;
                             IsAway = true;
+
+                            if (IsMowing)
+                            {
+                                IsActuallyMowing = true;
+                            }
                         }
                         break;
                     case LogType.MowingStarted:
                         {
                             IsMowing = true;
                             IsStuck = false;
+
+                            if (IsAway)
+                            {
+                                IsActuallyMowing = true;
+                            }
                         }
                         break;
                     case LogType.MowingEnded:

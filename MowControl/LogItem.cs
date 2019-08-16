@@ -22,7 +22,7 @@ namespace MowControl
 
         public override string ToString()
         {
-            return Time.ToString("yyyy-MM-dd HH:mm") + " - " + Message;
+            return Time.ToString("yyyy-MM-dd HH:mm") + "-" + Type + " - " + Message;
         }
     }
 }

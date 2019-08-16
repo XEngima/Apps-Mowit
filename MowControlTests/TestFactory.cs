@@ -113,7 +113,8 @@ namespace MowerTests
         public static IMowControlConfig NewConfig10To12And20To2359(
             bool usingContactHomeSensor = false,
             int maxMowingWithoutCharge = 2,
-            int maxChargingHours = 2)
+            int maxChargingHours = 2,
+            int averageWorkPerDayHours = 24)
 
         {
             var timeIntervals = new List<TimeInterval>();
@@ -123,7 +124,7 @@ namespace MowerTests
             return new MowControlConfig()
             {
                 TimeIntervals = timeIntervals,
-                AverageWorkPerDayHours = 8,
+                AverageWorkPerDayHours = averageWorkPerDayHours,
                 MaxHourlyThunderPercent = 0,
                 MaxHourlyPrecipitaionMillimeter = 0,
                 UsingContactHomeSensor = usingContactHomeSensor,
@@ -142,6 +143,29 @@ namespace MowerTests
             var timeIntervals = new List<TimeInterval>();
             timeIntervals.Add(new TimeInterval(9, 0, 11, 0));
             timeIntervals.Add(new TimeInterval(21, 0, 23, 0));
+
+            return new MowControlConfig()
+            {
+                TimeIntervals = timeIntervals,
+                AverageWorkPerDayHours = averageWorkPerDayHours,
+                MaxHourlyThunderPercent = 0,
+                MaxHourlyPrecipitaionMillimeter = 0,
+                UsingContactHomeSensor = usingContactHomeSensor,
+                MaxMowingHoursWithoutCharge = maxMowingWithoutCharge,
+                MaxChargingHours = maxChargingHours,
+            };
+        }
+
+        public static IMowControlConfig NewConfig06To10And19To2359(
+            bool usingContactHomeSensor = false,
+            int maxMowingWithoutCharge = 2,
+            int maxChargingHours = 2,
+            int averageWorkPerDayHours = 8)
+
+        {
+            var timeIntervals = new List<TimeInterval>();
+            timeIntervals.Add(new TimeInterval(6, 0, 10, 0));
+            timeIntervals.Add(new TimeInterval(19, 0, 23, 59));
 
             return new MowControlConfig()
             {
