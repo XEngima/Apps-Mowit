@@ -1104,12 +1104,15 @@ namespace MowerTests
             // Arrange
             var systemTime = new TestSystemTime(2018, 7, 24, 5, 0);
             var config = TestFactory.NewConfig0To6And12To18(usingContactHomeSensor: true);
+
+            var logger = TestFactory.NewMowLogger(systemTime.Now);
+            logger.LogItems.Add(new LogItem(new DateTime(2018, 7, 24, 0, 0, 0), LogType.MowingStarted, LogLevel.Debug, ""));
+
             var powerSwitch = new TestPowerSwitch(PowerStatus.On);
             var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
             var homeSensor = new TestHomeSensor(systemTime,
                 isHome: true,
                 mowerCameTime: new DateTime(2018, 7, 24, 4, 25, 0));
-            var logger = TestFactory.NewMowLogger(systemTime.Now);
             var rainSensor = new TestRainSensor(isWet: false);
             var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
 
@@ -1117,13 +1120,11 @@ namespace MowerTests
             mowController.CheckAndAct();
 
             // Assert
-            var logItems = logger.LogItems.Where(x => x.Type == LogType.MowingStarted || x.Type == LogType.MowingEnded).ToList();
-
             Assert.AreEqual(powerSwitch.Status, PowerStatus.Off);
-            Assert.AreEqual(1, logItems.Count);
 
-            Assert.AreEqual(LogType.MowingEnded, logItems[0].Type);
-            Assert.AreEqual("2018-07-24 05:00", logItems[0].Time.ToString("yyyy-MM-dd HH:mm"));
+            var logItem = logger.LogItems.FirstOrDefault(x => x.Type == LogType.MowingEnded);
+            Assert.IsNotNull(logItem);
+            Assert.AreEqual("2018-07-24 05:00", logItem.Time.ToString("yyyy-MM-dd HH:mm"));
         }
 
         [TestMethod]
@@ -1928,7 +1929,7 @@ namespace MowerTests
             var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
             var homeSensor = new TestHomeSensor(systemTime, isHome: true);
             var rainSensor = new TestRainSensor(isWet: false);
-            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor, true);
 
             // Act
             mowController.CheckAndAct();
@@ -1950,6 +1951,141 @@ namespace MowerTests
             Assert.IsTrue(actualReport.Contains(expectedIntervalMowingTime));
             Assert.IsTrue(actualReport.Contains(expectedActualMowingTime));
             Assert.IsTrue(actualReport.Contains(expectedMowerAwayTime));
+        }
+
+        [TestMethod]
+        public void MowingStartedYesterdayNotHomeFromStart_CreatingDailyReport_CorrectExaceMowerAwayTime()
+        {
+            // Arrange
+            var systemTime = new TestSystemTime(2019, 8, 17, 0, 0, 0);
+            var config = TestFactory.NewConfig06To10And19To2359(
+                usingContactHomeSensor: true,
+                averageWorkPerDayHours: 4
+                );
+
+            var logger = TestFactory.NewMowLogger(new DateTime(2019, 8, 16, 18, 0, 0));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 16, 18, 0, 0), LogType.PowerOn, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 16, 18, 30, 0), LogType.MowerCame, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 16, 18, 55, 0), LogType.PowerOff, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 16, 22, 30, 0), LogType.MowerLeft, LogLevel.Debug, ""));
+
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastGood(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime, 
+                isHome: false,
+                mowerCameTime: new DateTime(2019, 8, 16, 18, 30, 0));
+            var rainSensor = new TestRainSensor(isWet: false);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor, false);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            var daySummaryItems = logger.LogItems.Where(x => x.Type == LogType.DailyReport).ToList();
+
+            Assert.AreEqual(1, daySummaryItems.Count);
+
+            string expectedIntervalMowingTime = @"Total mowed: 0:00 hours.
+                              ".Replace(" ", "").Replace("\r\n", " ");
+            string expectedActualMowingTime = @"Actual out mowing time: 0:00 hours.
+                              ".Replace(" ", "").Replace("\r\n", " ");
+            string expectedMowerAwayTime = @"Exact mower away time: 1:59 hours.
+                              ".Replace(" ", "").Replace("\r\n", " ");
+
+            string actualReport = daySummaryItems[0].Message.Replace(" ", "").Replace("\r\n", " ");
+
+            Assert.IsTrue(actualReport.Contains(expectedIntervalMowingTime));
+            Assert.IsTrue(actualReport.Contains(expectedActualMowingTime));
+            Assert.IsTrue(actualReport.Contains(expectedMowerAwayTime));
+        }
+
+        [TestMethod]
+        public void MowingStartedTwoDaysAgo_CreatingDailyReport_CorrectExactMowerAwayTime()
+        {
+            // Arrange
+            var systemTime = new TestSystemTime(2019, 8, 18, 0, 0, 0);
+            var config = TestFactory.NewConfig06To10And19To2359(
+                usingContactHomeSensor: true,
+                averageWorkPerDayHours: 4
+                );
+
+            var logger = TestFactory.NewMowLogger(new DateTime(2019, 8, 16, 18, 10, 0));
+
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 16, 22, 30, 0), LogType.MowerLeft, LogLevel.Debug, ""));
+
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 17, 0, 0, 0), LogType.NewDay, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 17, 0, 4, 0), LogType.PowerOn, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 17, 0, 30, 0), LogType.MowerLost, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 17, 8, 24, 0), LogType.MowerCame, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 17, 8, 24, 0), LogType.MowingStarted, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 17, 8, 54, 0), LogType.PowerOff, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 17, 8, 54, 0), LogType.MowingEnded, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 17, 10, 5, 0), LogType.PowerOn, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 17, 18, 55, 0), LogType.PowerOff, LogLevel.Debug, ""));
+
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime, isHome: true);
+            var rainSensor = new TestRainSensor(isWet: true);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor, false);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            var daySummaryItems = logger.LogItems.Where(x => x.Type == LogType.DailyReport).ToList();
+
+            Assert.AreEqual(1, daySummaryItems.Count);
+
+            string expectedIntervalMowingTime = @"Total mowed: 0:30 hours.
+                              ".Replace(" ", "").Replace("\r\n", " ");
+            string expectedActualMowingTime = @"Actual out mowing time: 0:00 hours.
+                              ".Replace(" ", "").Replace("\r\n", " ");
+            string expectedMowerAwayTime = @"Exact mower away time: 8:24 hours.
+                              ".Replace(" ", "").Replace("\r\n", " ");
+
+            string actualReport = daySummaryItems[0].Message.Replace(" ", "").Replace("\r\n", " ");
+
+            Assert.IsTrue(actualReport.Contains(expectedIntervalMowingTime));
+            Assert.IsTrue(actualReport.Contains(expectedActualMowingTime));
+            Assert.IsTrue(actualReport.Contains(expectedMowerAwayTime));
+        }
+
+        [TestMethod]
+        public void MowingStartedTwoDaysAgo_MissingMowerComesHomeInWet_NotMowingStarted()
+        {
+            // Arrange
+            var systemTime = new TestSystemTime(2019, 8, 18, 8, 24, 0);
+            var config = TestFactory.NewConfig06To10And19To2359(
+                usingContactHomeSensor: true,
+                averageWorkPerDayHours: 4
+                );
+
+            var logger = TestFactory.NewMowLogger(new DateTime(2019, 8, 16, 18, 10, 0));
+
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 16, 22, 30, 0), LogType.MowerLeft, LogLevel.Debug, ""));
+
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 17, 0, 0, 0), LogType.NewDay, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 17, 0, 4, 0), LogType.PowerOn, LogLevel.Debug, ""));
+            logger.LogItems.Add(new LogItem(new DateTime(2019, 8, 17, 0, 30, 0), LogType.MowerLost, LogLevel.Debug, ""));
+
+            var powerSwitch = new TestPowerSwitch(PowerStatus.On);
+            var weatherForecast = TestFactory.NewWeatherForecastBad(systemTime);
+            var homeSensor = new TestHomeSensor(systemTime, 
+                isHome: true, 
+                mowerLeftTime: new DateTime(2019, 8, 16, 22, 30, 0), 
+                mowerCameTime: new DateTime(2019, 8, 18, 8, 24, 0));
+            var rainSensor = new TestRainSensor(isWet: true);
+            var mowController = new MowController(config, powerSwitch, weatherForecast, systemTime, homeSensor, logger, rainSensor, false);
+
+            // Act
+            mowController.CheckAndAct();
+
+            // Assert
+            Assert.AreEqual(powerSwitch.Status, PowerStatus.On);
+
+            var logItem = logger.LogItems.FirstOrDefault(x => x.Type == LogType.MowingStarted);
+            Assert.IsNull(logItem);
         }
     }
 }

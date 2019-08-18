@@ -23,7 +23,15 @@ namespace MowControl
             IsLost = false;
             IsMowing = false;
             IsHome = homeFromStart;
+            _isAway = !homeFromStart;
             IsStuck = false;
+
+            if (!homeFromStart)
+            {
+                var startTime = _logger.LogItems.First(x => x.Type == LogType.MowControllerStarted).Time;
+                LastMowerLeftTime = new DateTime(startTime.Year, startTime.Month, startTime.Day, startTime.Hour, startTime.Minute, 0);
+                LastActualMowingStartedTime = new DateTime(startTime.Year, startTime.Month, startTime.Day, startTime.Hour, startTime.Minute, 0);
+            }
 
             if (_logger != null)
             {
@@ -213,11 +221,6 @@ namespace MowControl
             {
                 if (_isActuallyMowing != value)
                 {
-                    if (CurrentLogItem.Time.ToString("yyyy-MM-dd HH:mm") == "2018-07-24 23:59")
-                    {
-                        int debug = 0;
-                    }
-
                     _isActuallyMowing = value;
 
                     if (!_isActuallyMowing) // If just stopped mowing
@@ -230,7 +233,13 @@ namespace MowControl
                             _actualMowingTimePerDayList.Add(actualMowingTimePerDay);
                         }
 
-                        actualMowingTimePerDay.AddSpentTime(CurrentLogItem.Time.FloorMinutes() - LastActualMowingStartedTime.FloorMinutes());
+                        DateTime startTime = LastActualMowingStartedTime;
+                        if (startTime.ToString("yyyy-MM-dd") != CurrentLogItem.Time.ToString("yyyy-MM-dd"))
+                        {
+                            startTime = new DateTime(CurrentLogItem.Time.Year, CurrentLogItem.Time.Month, CurrentLogItem.Time.Day);
+                        }
+
+                        actualMowingTimePerDay.AddSpentTime(CurrentLogItem.Time.FloorMinutes() - startTime.FloorMinutes());
 
                         LastActualMowingEndedTime = CurrentLogItem.Time;
                     }
@@ -255,11 +264,6 @@ namespace MowControl
                 {
                     _isAway = value;
 
-                    if (CurrentLogItem.Time.Day == 9)
-                    {
-                        int debug = 0;
-                    }
-
                     if (!_isAway)
                     {
                         var mowerAwayTimePerDay = GetLastMowerAwayTimePerDayItem();
@@ -270,7 +274,13 @@ namespace MowControl
                             _mowerAwayList.Add(mowerAwayTimePerDay);
                         }
 
-                        mowerAwayTimePerDay.AddSpentTime(CurrentLogItem.Time.FloorMinutes() - LastMowerLeftTime.FloorMinutes());
+                        DateTime startTime = LastMowerLeftTime;
+                        if (startTime.ToString("yyyy-MM-dd") != CurrentLogItem.Time.ToString("yyyy-MM-dd"))
+                        {
+                            startTime = new DateTime(CurrentLogItem.Time.Year, CurrentLogItem.Time.Month, CurrentLogItem.Time.Day);
+                        }
+
+                        mowerAwayTimePerDay.AddSpentTime(CurrentLogItem.Time.FloorMinutes() - startTime.FloorMinutes());
 
                         LastMowerCameTime = CurrentLogItem.Time;
                     }

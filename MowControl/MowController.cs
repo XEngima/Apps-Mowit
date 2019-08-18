@@ -356,6 +356,8 @@ namespace MowControl
 
         private LogAnalyzer LogAnalyzer;
 
+        private int ForecastHours { get; set; }
+
         /// <summary>
         /// Kollar om strömmen ska slås på eller av och gör det i sådana fall.
         /// </summary>
@@ -391,11 +393,11 @@ namespace MowControl
 
             // Calculate forecast hours
 
-            int forecastHours = NextOrCurrentInterval.EndHour - IterationTime.Hour + 2;
+            ForecastHours = NextOrCurrentInterval.EndHour - IterationTime.Hour + 2;
 
             if (Config.UsingContactHomeSensor)
             {
-                forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
+                ForecastHours = Config.MaxMowingHoursWithoutCharge + 1;
             }
 
             try
@@ -510,7 +512,7 @@ namespace MowControl
                 {
                     //int forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
 
-                    if (_mowerIsHome && PowerSwitch.Status == PowerStatus.On && !RainSensor.IsWet && WeatherForecast.CheckIfWeatherWillBeGood(forecastHours) && LogAnalyzer.IsMowing && !LogAnalyzer.IsStuck)
+                    if (_mowerIsHome && PowerSwitch.Status == PowerStatus.On && !RainSensor.IsWet && WeatherForecast.CheckIfWeatherWillBeGood(ForecastHours) && LogAnalyzer.IsMowing && !LogAnalyzer.IsStuck)
                     {
                         var lastEssentialLogItem = Logger.LogItems
                             .OrderByDescending(x => x.Time)
@@ -550,7 +552,7 @@ namespace MowControl
                 // Check if there has ocurred an interval start, and in case it has, write a log message
 
                 bool atLastMinuteOfInterval = NextOrCurrentInterval.EndHour == IterationTime.Hour && NextOrCurrentInterval.EndMin == IterationTime.Minute;
-                if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && !LogAnalyzer.IsMowing && !LogAnalyzer.IsLost && (!LogAnalyzer.IsStuck || mowerLeftThisTurn) && !RainSensor.IsWet && WeatherForecast.CheckIfWeatherWillBeGood(forecastHours) && !atLastMinuteOfInterval)
+                if (!BetweenIntervals && PowerSwitch.Status == PowerStatus.On && !LogAnalyzer.IsMowing && !LogAnalyzer.IsLost && (!LogAnalyzer.IsStuck || mowerLeftThisTurn) && !RainSensor.IsWet && WeatherForecast.CheckIfWeatherWillBeGood(ForecastHours) && !atLastMinuteOfInterval)
                 {
                     SetMowingStarted();
                 }
@@ -580,7 +582,7 @@ namespace MowControl
 
                                     string weatherAheadDescription;
 
-                                    bool weatherWillBeGood = WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out weatherAheadDescription);
+                                    bool weatherWillBeGood = WeatherForecast.CheckIfWeatherWillBeGood(ForecastHours, out weatherAheadDescription);
                                     bool mowingNecessary = MowingNecessary();
                                     if (weatherWillBeGood && mowingNecessary)
                                     {
@@ -619,13 +621,13 @@ namespace MowControl
                         // If a contact home sensor is used, weather can be checked for much smaller time spans
                         if (Config.UsingContactHomeSensor)
                         {
-                            forecastHours = Config.MaxMowingHoursWithoutCharge + 1;
+                            ForecastHours = Config.MaxMowingHoursWithoutCharge + 1;
                         }
 
                         if (minutesLeftToIntervalStart <= 5 || !BetweenIntervals && HomeSensor.IsHome && (IterationTime - HomeSensor.MowerCameTime).TotalMinutes >= 30 || PowerSwitch.Status == PowerStatus.Unknown)
                         {
                             string logMessage;
-                            bool weatherWillBeGood = WeatherForecast.CheckIfWeatherWillBeGood(forecastHours, out logMessage);
+                            bool weatherWillBeGood = WeatherForecast.CheckIfWeatherWillBeGood(ForecastHours, out logMessage);
 
                             if (weatherWillBeGood && RainSensor.IsWet)
                             {
@@ -690,7 +692,7 @@ namespace MowControl
                 if (!LogAnalyzer.IsMowing)
                 {
                     bool atLastMinuteOfInterval = NextOrCurrentInterval.EndHour == IterationTime.Hour && NextOrCurrentInterval.EndMin == IterationTime.Minute;
-                    if (!atLastMinuteOfInterval)
+                    if (!atLastMinuteOfInterval && !RainSensor.IsWet && WeatherForecast.CheckIfWeatherWillBeGood(ForecastHours))
                     {
                         Logger.Write(IterationTime, LogType.MowingStarted, LogLevel.InfoLessInteresting, "Mowing started.");
                     }
@@ -700,13 +702,18 @@ namespace MowControl
 
         private void SetMowingEnded()
         {
-            // Check if last item as a MowingStarted item.
-            var logItems = Logger.LogItems
-                .Where(x => x.Type == LogType.MowingStarted || x.Type == LogType.MowingEnded)
-                .OrderByDescending(x => x.Time)
-                .ToList();
-            
-            if (logItems.Count == 0 || logItems[0].Type == LogType.MowingStarted)
+            //// Check if last item as a MowingStarted item.
+            //var logItems = Logger.LogItems
+            //    .Where(x => x.Type == LogType.MowingStarted || x.Type == LogType.MowingEnded)
+            //    .OrderByDescending(x => x.Time)
+            //    .ToList();
+
+            //if (logItems.Count == 0 || logItems[0].Type == LogType.MowingStarted)
+            //{
+            //    Logger.Write(IterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
+            //}
+
+            if (LogAnalyzer.IsMowing)
             {
                 Logger.Write(IterationTime, LogType.MowingEnded, LogLevel.InfoLessInteresting, "Mowing ended.");
             }
