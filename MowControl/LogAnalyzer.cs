@@ -59,14 +59,15 @@ namespace MowControl
             return _mowerAwayList[_mowerAwayList.Count - 1];
         }
 
-        public double GetAverageMowingTime(DateTime iterationTime)
+        public double GetAverageMowingTime(DateTime iterationTime, out double mowingTimeToday)
         {
             double totalHours = 0;
             DateTime todayDate = new DateTime(iterationTime.Year, iterationTime.Month, iterationTime.Day);
-            DateTime startDate = todayDate.AddDays(-4);
+            DateTime startDate = todayDate.AddDays(-5);
             DateTime date = startDate;
             int daysCount = 0;
             bool startedCounting = false;
+            mowingTimeToday = 0;
 
             while (date <= todayDate)
             {
@@ -76,6 +77,11 @@ namespace MowControl
                 {
                     totalHours += mowingTime.SpentTime.TotalHours;
                     startedCounting = true;
+
+                    if (date == todayDate)
+                    {
+                        mowingTimeToday += mowingTime.SpentTime.TotalHours;
+                    }
                 }
 
                 if (startedCounting)
@@ -92,6 +98,7 @@ namespace MowControl
             if (logItem != null && logItem.Type == LogType.MowingStarted)
             {
                 totalHours += (iterationTime - logItem.Time).TotalHours;
+                mowingTimeToday += (iterationTime - logItem.Time).TotalHours;
             }
 
             if (daysCount > 0)

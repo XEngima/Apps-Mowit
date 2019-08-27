@@ -193,89 +193,22 @@ namespace MowControl
         /// <returns>true om klippning är nödvändig, annars false.</returns>
         private bool MowingNecessary()
         {
-            double averageWorkingHours = LogAnalyzer.GetAverageMowingTime(IterationTime);
-            return averageWorkingHours < Config.AverageWorkPerDayHours;
+            double mowingTimeToday;
+            double averageWorkingHours = LogAnalyzer.GetAverageMowingTime(IterationTime, out mowingTimeToday);
 
-            double workHours = 0d;
-            double hoursOverSchedule = 0d;
-            bool powerIsOn = false;
-            double totalWorkHours = 0d;
-            double totalHours = 0d;
-
-            var mowStartedLogItem = Logger.LogItems
-                .OrderByDescending(i => i.Time)
-                .FirstOrDefault(i => i.Type == LogType.MowControllerStarted);
-
-            DateTime now = IterationTime;
-            DateTime floorNow = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0);
-            DateTime dateTime = mowStartedLogItem.Time;
-            DateTime floorDate = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, 0, 0, 0);
-
-            while (floorDate <= now)
+            // If not enough hours to reach average in the last few days, return necessary.
+            if (averageWorkingHours < Config.AverageWorkPerDayHours)
             {
-                // Räkna bara de senaste 7 dagarna.
-                if (floorDate <= floorNow.AddDays(-7))
-                {
-                    hoursOverSchedule = 0;
-                    totalWorkHours = 0;
-                }
-
-                workHours = 0;
-
-                foreach (var interval in Config.TimeIntervals.OrderBy(ti => ti.StartHour).ThenBy(ti => ti.StartMin))
-                {
-                    DateTime intervalStartTime = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, interval.StartHour, interval.StartMin, 0);
-
-                    if (intervalStartTime < now)
-                    {
-                        // Hämta senaste loggmeddelandet
-                        var lastLogItem = Logger.LogItems
-                            .Where(i => i.Time <= intervalStartTime && (i.Type == LogType.MowControllerStarted || i.Type == LogType.PowerOn || i.Type == LogType.PowerOff))
-                            .OrderByDescending(i => i.Time)
-                            .ThenByDescending(i => i.Type)
-                            .FirstOrDefault();
-
-                        if (lastLogItem != null)
-                        {
-                            powerIsOn = lastLogItem.Type == LogType.PowerOn;
-                        }
-
-                        if (powerIsOn)
-                        {
-                            workHours = interval.ToTimeSpan().TotalHours;
-                            totalWorkHours += workHours;
-                            //hoursOverSchedule = workHours - (Config.AverageWorkPerDayHours * totalWorkHours) / 24d;
-                        }
-                    }
-                }
-
-                //if (workHours > 0)
-                //{
-                //    hoursOverSchedule += (workHours - Config.AverageWorkPerDayHours);
-                //}
-
-                dateTime = dateTime.AddDays(1);
-                floorDate = floorDate.AddDays(1);
+                return true;
             }
 
-            bool mowingNecessary = true;
-
-            if (totalWorkHours > 0)
+            // If not mowed the average time today, then return necessary
+            if (mowingTimeToday < Config.AverageWorkPerDayHours)
             {
-                DateTime nextIntervalStartTime = new DateTime(now.Year, now.Month, now.Day, NextOrCurrentInterval.StartHour, NextOrCurrentInterval.StartMin, 0);
-                totalHours = (nextIntervalStartTime - mowStartedLogItem.Time).TotalHours;
-                double nextIntervalHours = NextOrCurrentInterval.ToTimeSpan().TotalHours;
-                mowingNecessary = ((totalWorkHours - nextIntervalHours) / totalHours) < (Config.AverageWorkPerDayHours / 24d);
+                return true;
             }
 
-            // Gör en extra koll på vädret
-
-            if (!WeatherForecast.CheckIfWeatherWillBeGood(48))
-            {
-                mowingNecessary = true;
-            }
-
-            return mowingNecessary;
+            return false;
         }
 
         /// <summary>
