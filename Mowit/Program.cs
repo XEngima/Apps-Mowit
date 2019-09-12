@@ -4,6 +4,7 @@ using System.IO;
 using System.Xml.Serialization;
 using MowControl;
 using SmhiWeather;
+using DanielEiserman.Power;
 
 // dotnet publish -c Release -r win10-x64
 

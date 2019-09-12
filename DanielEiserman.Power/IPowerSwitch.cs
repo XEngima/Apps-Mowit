@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MowControl
+namespace DanielEiserman.Power
 {
     /// <summary>
     /// Klass som hanterar på- och avslagning av stömmen till gräsklipparen.
@@ -20,10 +20,5 @@ namespace MowControl
         /// Stänger av strömmen till robotgräsklipparen.
         /// </summary>
         void TurnOff();
-
-        /// <summary>
-        /// Hämtar huruvida strömmen till robotgräsklipparen är påslagen eller inte.
-        /// </summary>
-        PowerStatus Status { get; }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace MowControl
+﻿namespace DanielEiserman.Power
 {
     public class PowerChangedEventArgs
     {

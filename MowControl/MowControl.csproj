@@ -8,4 +8,8 @@
     <PackageReference Include="SmhiWeather" Version="0.99.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DanielEiserman.Power\DanielEiserman.Power.csproj" />
+  </ItemGroup>
+
 </Project>

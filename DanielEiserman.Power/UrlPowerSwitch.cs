@@ -4,7 +4,7 @@ using System.Text;
 using System.Net;
 using System.IO;
 
-namespace MowControl
+namespace DanielEiserman.Power
 {
     public class UrlPowerSwitch : IPowerSwitch
     {
